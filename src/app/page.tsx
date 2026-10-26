@@ -62,6 +62,9 @@ async function SetupCheck() {
   ]);
 
   const dbError = pharmacies.error ?? medicines.error;
+  // A head request has no response body, so a missing table can come back as
+  // `count: null` with no error. Treat that as "tables not created yet".
+  const tablesMissing = pharmacies.count === null || medicines.count === null;
 
   return (
     <CheckList
@@ -69,10 +72,15 @@ async function SetupCheck() {
         { ok: true, text: "Supabase settings found" },
         dbError
           ? { ok: false, text: `Database error: ${dbError.message}` }
-          : {
-              ok: true,
-              text: `Database connected: ${pharmacies.count ?? 0} pharmacies, ${medicines.count ?? 0} medicines`,
-            },
+          : tablesMissing
+            ? {
+                ok: false,
+                text: "Tables not found: run the migration and seed.sql in the Supabase SQL Editor",
+              }
+            : {
+                ok: true,
+                text: `Database connected: ${pharmacies.count} pharmacies, ${medicines.count} medicines`,
+              },
       ]}
     />
   );
