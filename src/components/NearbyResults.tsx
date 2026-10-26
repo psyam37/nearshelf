@@ -1,3 +1,4 @@
+import { AskToConfirmButton } from "@/components/AskToConfirmButton";
 import { StockBadge } from "@/components/StockBadge";
 import { formatDistance, formatUpdatedAgo, isStale } from "@/lib/stock";
 import type { NearbyStockResult } from "@/lib/types";
@@ -6,22 +7,30 @@ interface NearbyResultsProps {
   results: NearbyStockResult[];
   /** The medicine that was searched for, to flag rows that are an equivalent. */
   medicineId: string;
+  /** The viewer's own pharmacy: they can ask the others to confirm. */
+  myPharmacy: { id: string } | null;
 }
 
-export function NearbyResults({ results, medicineId }: NearbyResultsProps) {
+export function NearbyResults({ results, medicineId, myPharmacy }: NearbyResultsProps) {
   const now = new Date(); // one "now" for the whole list, so every row agrees
 
   return (
     <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
       {results.map((row) => {
         const stale = isStale(row.updated_at, now);
+        const isMine = row.pharmacy_id === myPharmacy?.id;
         return (
           // A pharmacy can appear twice when equivalents are included
           // (e.g. 50mg and 100mg), so the key needs both ids.
           <li key={`${row.pharmacy_id}:${row.medicine_id}`} className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-medium">{row.pharmacy_name}</p>
+                <p className="font-medium">
+                  {row.pharmacy_name}
+                  {isMine && (
+                    <span className="ml-2 text-xs font-normal text-emerald-700">Your pharmacy</span>
+                  )}
+                </p>
                 <p className="text-sm text-zinc-500">
                   {row.address_line}, {row.postcode} · {formatDistance(row.distance_m)}
                 </p>
@@ -45,6 +54,12 @@ export function NearbyResults({ results, medicineId }: NearbyResultsProps) {
                 </a>
               )}
             </div>
+
+            {myPharmacy && !isMine && (
+              <div className="mt-3">
+                <AskToConfirmButton toPharmacyId={row.pharmacy_id} medicineId={row.medicine_id} />
+              </div>
+            )}
           </li>
         );
       })}

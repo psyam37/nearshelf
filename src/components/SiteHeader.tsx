@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { signOut } from "@/app/sign-in/actions";
+import { RequestsLink } from "@/components/RequestsLink";
 import { getCurrentUser } from "@/lib/auth";
+import { getMyPharmacy } from "@/lib/pharmacy";
+import { createClient } from "@/lib/supabase/server";
 
 export function SiteHeader() {
   return (
@@ -30,6 +33,18 @@ async function AccountLinks() {
     );
   }
 
+  const pharmacy = await getMyPharmacy();
+  let pendingCount = 0;
+  if (pharmacy) {
+    const supabase = await createClient();
+    const { count } = await supabase
+      .from("stock_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("to_pharmacy_id", pharmacy.id)
+      .eq("status", "pending");
+    pendingCount = count ?? 0;
+  }
+
   return (
     <div className="flex items-center gap-4">
       <Link href="/search" className="hover:underline">
@@ -38,6 +53,7 @@ async function AccountLinks() {
       <Link href="/my-pharmacy" className="hover:underline">
         My pharmacy
       </Link>
+      {pharmacy && <RequestsLink pharmacyId={pharmacy.id} initialPending={pendingCount} />}
       <form action={signOut}>
         <button type="submit" className="text-zinc-500 hover:underline" title={user.email ?? ""}>
           Sign out

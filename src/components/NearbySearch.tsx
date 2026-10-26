@@ -6,6 +6,7 @@ import type { NearbyStockResponse } from "@/app/api/nearby/route";
 import { LocationPicker } from "@/components/LocationPicker";
 import { MedicineSearch } from "@/components/MedicineSearch";
 import { NearbyResults } from "@/components/NearbyResults";
+import { useTableChanges } from "@/hooks/useTableChanges";
 import type { NamedLocation } from "@/lib/geo";
 import type { Medicine } from "@/lib/types";
 
@@ -20,11 +21,18 @@ const StockMap = dynamic(() => import("@/components/StockMap"), {
 
 const RADIUS_OPTIONS_KM = [1, 2, 5, 10, 25] as const;
 
-export function NearbySearch() {
+interface NearbySearchProps {
+  /** The pharmacy the user works at, if any: lets them ask others to confirm stock. */
+  myPharmacy: { id: string; name: string } | null;
+}
+
+export function NearbySearch({ myPharmacy }: NearbySearchProps) {
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [location, setLocation] = useState<NamedLocation | null>(null);
   const [radiusKm, setRadiusKm] = useState<number>(5);
   const [includeEquivalents, setIncludeEquivalents] = useState(false);
+  // Bumped whenever the database says stock changed, to fetch again.
+  const [refreshCount, setRefreshCount] = useState(0);
   const [result, setResult] = useState<{ forUrl: string; response: NearbyStockResponse } | null>(
     null,
   );
@@ -53,10 +61,22 @@ export function NearbySearch() {
         setResult({ forUrl: url, response: { error: "Couldn't reach the server" } });
       });
     return () => controller.abort();
-  }, [url]);
+  }, [url, refreshCount]);
 
   const current = url !== null && result?.forUrl === url ? result.response : null;
   const loading = url !== null && current === null;
+
+  // Listen for stock changes to the medicines on screen (with equivalents,
+  // that can be several). While refetching, the old results stay visible.
+  const medicineIds =
+    current && "results" in current && current.results.length > 0
+      ? [...new Set(current.results.map((row) => row.medicine_id))].sort()
+      : medicine
+        ? [medicine.id]
+        : [];
+  const liveFilter =
+    url && medicineIds.length > 0 ? `medicine_id=in.(${medicineIds.join(",")})` : null;
+  useTableChanges("stock_status", liveFilter, () => setRefreshCount((n) => n + 1));
 
   return (
     <div className="space-y-6">
@@ -103,11 +123,19 @@ export function NearbySearch() {
         </p>
       ) : current && location && medicine ? (
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold">
+          <h2 className="flex items-center justify-between text-lg font-semibold">
             {current.results.length} {current.results.length === 1 ? "result" : "results"}
+            <span className="flex items-center gap-1.5 text-xs font-normal text-zinc-500">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" aria-hidden />
+              Live
+            </span>
           </h2>
           <StockMap origin={location} results={current.results} />
-          <NearbyResults results={current.results} medicineId={medicine.id} />
+          <NearbyResults
+            results={current.results}
+            medicineId={medicine.id}
+            myPharmacy={myPharmacy}
+          />
         </section>
       ) : null}
     </div>
