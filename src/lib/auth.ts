@@ -2,6 +2,7 @@
 // Route Handlers. `server-only` makes the build fail if browser code imports it.
 import "server-only";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export interface CurrentUser {
@@ -11,6 +12,9 @@ export interface CurrentUser {
 
 /** The signed-in user, or null. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  // Checking a session compares its expiry with the current time, so it can
+  // never be worked out ahead of time: tell Next.js this needs a real request.
+  await connection();
   const supabase = await createClient();
   // getClaims() checks the session token's signature, so a cookie someone
   // edited by hand is rejected. Don't trust getSession() on the server: it
