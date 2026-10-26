@@ -6,9 +6,9 @@ import { STOCK_LEVELS, type StockLevel } from "@/lib/types";
 import { updateStockLevel, type StockUpdateState } from "./actions";
 
 const SELECTED_STYLES: Record<StockLevel, string> = {
-  in_stock: "bg-emerald-700 text-white border-emerald-700",
-  low: "bg-amber-500 text-white border-amber-500",
-  out_of_stock: "bg-rose-600 text-white border-rose-600",
+  in_stock: "bg-emerald-600 text-white shadow-sm",
+  low: "bg-amber-500 text-white shadow-sm",
+  out_of_stock: "bg-rose-600 text-white shadow-sm",
 };
 
 interface StockLevelFormProps {
@@ -37,7 +37,7 @@ export function StockLevelForm({
       <div
         role="group"
         aria-label={`Stock level for ${medicineName}`}
-        className="inline-flex overflow-hidden rounded-lg border border-zinc-300 dark:border-zinc-700"
+        className="inline-flex gap-1 rounded-xl border border-line bg-surface-2 p-1"
       >
         {STOCK_LEVELS.map((level) => (
           <button
@@ -47,23 +47,23 @@ export function StockLevelForm({
             value={level}
             disabled={pending}
             aria-pressed={current === level}
-            className={`border-l border-zinc-300 px-2.5 py-1.5 text-xs font-medium first:border-l-0 disabled:opacity-60 dark:border-zinc-700 ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
               current === level
                 ? SELECTED_STYLES[level]
-                : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-muted hover:bg-surface hover:text-ink"
             }`}
           >
             {STOCK_LABELS[level]}
           </button>
         ))}
       </div>
-      <p aria-live="polite" className="mt-1 h-4 text-xs">
+      <p aria-live="polite" className="mt-1 h-4 text-right text-xs">
         {pending ? (
-          <span className="text-zinc-500">Saving…</span>
+          <span className="text-muted">Saving…</span>
         ) : state.status === "error" ? (
           <span className="text-rose-600">{state.message}</span>
         ) : state.status === "saved" ? (
-          <span className="text-emerald-700">Saved</span>
+          <span className="text-accent">Saved</span>
         ) : null}
       </p>
     </form>

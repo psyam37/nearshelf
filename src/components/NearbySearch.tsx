@@ -6,6 +6,7 @@ import type { NearbyStockResponse } from "@/app/api/nearby/route";
 import { LocationPicker } from "@/components/LocationPicker";
 import { MedicineSearch } from "@/components/MedicineSearch";
 import { NearbyResults } from "@/components/NearbyResults";
+import { Card, EmptyState, ListSkeleton } from "@/components/ui";
 import { useTableChanges } from "@/hooks/useTableChanges";
 import type { NamedLocation } from "@/lib/geo";
 import type { Medicine } from "@/lib/types";
@@ -14,9 +15,7 @@ import type { Medicine } from "@/lib/types";
 // it's needed, so the page's first load stays small.
 const StockMap = dynamic(() => import("@/components/StockMap"), {
   ssr: false,
-  loading: () => (
-    <div className="h-80 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-900" />
-  ),
+  loading: () => <div className="h-80 w-full animate-pulse rounded-2xl bg-surface-2" />,
 });
 
 const RADIUS_OPTIONS_KM = [1, 2, 5, 10, 25] as const;
@@ -79,57 +78,66 @@ export function NearbySearch({ myPharmacy }: NearbySearchProps) {
   useTableChanges("stock_status", liveFilter, () => setRefreshCount((n) => n + 1));
 
   return (
-    <div className="space-y-6">
-      <MedicineSearch onSelect={setMedicine} />
-      <LocationPicker value={location} onChange={setLocation} />
+    <div className="space-y-8">
+      <Card className="space-y-6 p-5 sm:p-6">
+        <MedicineSearch onSelect={setMedicine} />
+        <LocationPicker value={location} onChange={setLocation} />
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-        <label className="flex items-center gap-2">
-          Within
-          <select
-            value={radiusKm}
-            onChange={(event) => setRadiusKm(Number(event.target.value))}
-            className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
-          >
-            {RADIUS_OPTIONS_KM.map((km) => (
-              <option key={km} value={km}>
-                {km} km
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 select-none">
-          <input
-            type="checkbox"
-            checked={includeEquivalents}
-            onChange={(e) => setIncludeEquivalents(e.target.checked)}
-            className="h-4 w-4 rounded border-zinc-300 accent-emerald-700"
-          />
-          <span>Include equivalents</span>
-        </label>
-      </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-5 text-sm">
+          <label className="flex items-center gap-2 text-muted">
+            Within
+            <select
+              value={radiusKm}
+              onChange={(event) => setRadiusKm(Number(event.target.value))}
+              className="rounded-lg border border-line bg-surface px-2.5 py-1.5 font-medium text-ink"
+            >
+              {RADIUS_OPTIONS_KM.map((km) => (
+                <option key={km} value={km}>
+                  {km} km
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 select-none">
+            <input
+              type="checkbox"
+              checked={includeEquivalents}
+              onChange={(e) => setIncludeEquivalents(e.target.checked)}
+              className="h-4 w-4 rounded border-line accent-brand-700"
+            />
+            <span>Include other strengths and brands</span>
+          </label>
+        </div>
+      </Card>
 
       {!url ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
-          {medicine ? "Now choose where to search." : "Pick a medicine and a place to search."}
-        </p>
+        <EmptyState icon={medicine ? "pin" : "search"}>
+          {medicine
+            ? "Now choose where to search: your location, a postcode or a demo area."
+            : "Pick a medicine and a place to search. Results appear here, with a map."}
+        </EmptyState>
       ) : loading ? (
-        <p className="text-sm text-zinc-500">Finding pharmacies…</p>
+        <ListSkeleton />
       ) : current && "error" in current ? (
-        <p className="text-sm text-rose-600">{current.error}</p>
-      ) : current && current.results.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
-          No pharmacies within {radiusKm} km have a record for this medicine. Try a bigger radius.
+        <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-800 dark:bg-rose-950 dark:text-rose-200">
+          {current.error}
         </p>
+      ) : current && current.results.length === 0 ? (
+        <EmptyState icon="pin">
+          No pharmacies within {radiusKm} km have a record for this medicine. Try a bigger radius.
+        </EmptyState>
       ) : current && location && medicine ? (
         <section className="space-y-4">
-          <h2 className="flex items-center justify-between text-lg font-semibold">
-            {current.results.length} {current.results.length === 1 ? "result" : "results"}
-            <span className="flex items-center gap-1.5 text-xs font-normal text-zinc-500">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" aria-hidden />
+          <div className="flex items-end justify-between">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {current.results.length} {current.results.length === 1 ? "pharmacy" : "pharmacies"}{" "}
+              <span className="font-normal text-muted">near {location.label}</span>
+            </h2>
+            <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
               Live
             </span>
-          </h2>
+          </div>
           <StockMap origin={location} results={current.results} />
           <NearbyResults
             results={current.results}

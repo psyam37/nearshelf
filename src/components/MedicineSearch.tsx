@@ -6,6 +6,7 @@ import { useEffect, useId, useState, type KeyboardEvent } from "react";
 import type { BarcodeLookupResponse } from "@/app/api/barcodes/[gtin]/route";
 import type { MedicineSearchResponse } from "@/app/api/medicines/route";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { Icon, button } from "@/components/ui";
 import { GTIN_PATTERN } from "@/lib/gtin";
 import type { Medicine } from "@/lib/types";
 
@@ -128,10 +129,14 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
 
   return (
     <div className="w-full">
-      <label htmlFor={`${listId}-input`} className="block text-sm font-medium">
+      <label htmlFor={`${listId}-input`} className="block text-sm font-semibold">
         Medicine
       </label>
-      <div className="relative mt-1 flex gap-2">
+      <div className="relative mt-1.5 flex gap-2">
+        <Icon
+          name="search"
+          className="pointer-events-none absolute top-1/2 left-3.5 h-[18px] w-[18px] -translate-y-1/2 text-muted"
+        />
         <input
           id={`${listId}-input`}
           type="text"
@@ -154,21 +159,21 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base shadow-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-w-0 flex-1 rounded-xl border border-line bg-surface py-2.5 pr-3.5 pl-10 text-base shadow-sm outline-none placeholder:text-muted/70 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15"
         />
 
         {showList && (
-          <div className="absolute top-full z-10 mt-1 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="absolute top-full z-10 mt-2 w-full overflow-hidden rounded-xl border border-line bg-surface shadow-xl shadow-brand-950/10">
             {isBarcode ? (
-              <p className="px-3 py-2.5 text-sm text-zinc-500">
+              <p className="px-3 py-2.5 text-sm text-muted">
                 Press Enter to look up barcode {trimmed}
               </p>
             ) : loading ? (
-              <p className="px-3 py-2.5 text-sm text-zinc-500">Searching…</p>
+              <p className="px-3 py-2.5 text-sm text-muted">Searching…</p>
             ) : error ? (
               <p className="px-3 py-2.5 text-sm text-rose-600">{error}</p>
             ) : medicines.length === 0 ? (
-              <p className="px-3 py-2.5 text-sm text-zinc-500">No medicines match “{trimmed}”</p>
+              <p className="px-3 py-2.5 text-sm text-muted">No medicines match “{trimmed}”</p>
             ) : (
               <ul id={listId} role="listbox" className="max-h-80 overflow-y-auto py-1">
                 {medicines.map((medicine, index) => (
@@ -185,12 +190,12 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
                     }}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-2 ${
-                      index === activeIndex ? "bg-emerald-50 dark:bg-emerald-950" : ""
+                      index === activeIndex ? "bg-brand-50 dark:bg-brand-950" : ""
                     }`}
                   >
                     <span>
                       <span className="block text-sm font-medium">{medicine.name}</span>
-                      <span className="block text-xs text-zinc-500">
+                      <span className="block text-xs text-muted">
                         {medicine.equivalence_group}
                         {medicine.form ? ` · ${medicine.form}` : ""}
                       </span>
@@ -208,14 +213,15 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
           onClick={() => setScannerOpen(true)}
           aria-label="Scan a barcode with the camera"
           title="Scan a barcode"
-          className="shrink-0 rounded-lg border border-zinc-300 px-3 text-lg hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+          className={`${button.secondary} shrink-0 px-3`}
         >
-          ▥
+          <Icon name="scan" className="h-5 w-5 text-accent" />
+          <span className="hidden sm:inline">Scan</span>
         </button>
       </div>
 
       {barcodeMessage && (
-        <p aria-live="polite" className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p aria-live="polite" className="mt-2 text-sm text-muted">
           {barcodeMessage}
         </p>
       )}
@@ -224,15 +230,20 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
       )}
 
       {selected && (
-        <div className="mt-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-          <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase">Selected</p>
-          <p className="mt-1 flex flex-wrap items-center gap-2 font-medium">
-            {selected.name}
-            {selected.is_controlled && <ControlledTag />}
-          </p>
-          <p className="mt-1 text-sm text-zinc-500">
-            Equivalence group: {selected.equivalence_group}
-          </p>
+        <div className="mt-3 flex items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950">
+          <span className="mt-0.5 rounded-full bg-brand-700 p-1 text-white dark:bg-brand-500">
+            <Icon name="check" className="h-3.5 w-3.5" />
+          </span>
+          <div className="min-w-0">
+            <p className="flex flex-wrap items-center gap-2 font-semibold">
+              {selected.name}
+              {selected.is_controlled && <ControlledTag />}
+            </p>
+            <p className="mt-0.5 text-sm text-muted">
+              {[selected.form, selected.strength].filter(Boolean).join(" · ")}
+              {" · "}group: {selected.equivalence_group}
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -243,7 +254,7 @@ function ControlledTag() {
   return (
     <span
       title="Controlled drug: extra legal rules apply to supply"
-      className="inline-flex shrink-0 items-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800 ring-1 ring-violet-600/20 ring-inset"
+      className="inline-flex shrink-0 items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-800 ring-1 ring-violet-600/20 ring-inset dark:bg-violet-950 dark:text-violet-300"
     >
       Controlled drug
     </span>

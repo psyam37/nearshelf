@@ -98,10 +98,7 @@ export default function StockMap({ origin, results }: StockMapProps) {
   }, [pointsKey]);
 
   return (
-    <div
-      ref={containerRef}
-      className="z-0 h-80 w-full rounded-lg border border-zinc-200 dark:border-zinc-800"
-    />
+    <div ref={containerRef} className="z-0 h-80 w-full rounded-2xl border border-line shadow-sm" />
   );
 }
 

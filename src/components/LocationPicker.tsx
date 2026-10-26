@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { Icon, button } from "@/components/ui";
 import { DEMO_LOCATIONS, getBrowserLocation, lookupPostcode, type NamedLocation } from "@/lib/geo";
 
 interface LocationPickerProps {
@@ -35,17 +36,18 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
 
   return (
     <div>
-      <p className="text-sm font-medium">Near</p>
-      <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+      <p className="text-sm font-semibold">Near</p>
+      <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
           onClick={() =>
             run("gps", async () => ({ label: "Your location", ...(await getBrowserLocation()) }))
           }
           disabled={busy !== null}
-          className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm font-medium hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+          className={button.secondary}
         >
-          {busy === "gps" ? "Finding you…" : "📍 Use my location"}
+          <Icon name="pin" className="h-4 w-4 text-accent" />
+          {busy === "gps" ? "Finding you…" : "Use my location"}
         </button>
         <form onSubmit={handlePostcode} className="flex flex-1 gap-2">
           <label htmlFor="postcode" className="sr-only">
@@ -57,19 +59,19 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
             onChange={(event) => setPostcode(event.target.value)}
             placeholder="or a postcode, e.g. N1 6AA"
             autoComplete="postal-code"
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base uppercase placeholder:normal-case focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
+            className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base uppercase placeholder:normal-case focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 focus:outline-none"
           />
           <button
             type="submit"
             disabled={busy !== null || !postcode.trim()}
-            className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={button.primary}
           >
             {busy === "postcode" ? "…" : "Go"}
           </button>
         </form>
       </div>
 
-      <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+      <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
         Demo areas:
         {DEMO_LOCATIONS.map((demo) => (
           <button
@@ -79,7 +81,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
               setError(null);
               onChange(demo);
             }}
-            className="rounded-full border border-zinc-300 px-2.5 py-1 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+            className="rounded-full border border-line bg-surface px-2.5 py-1 font-medium text-ink transition-colors hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950"
           >
             {demo.label}
           </button>
@@ -88,8 +90,9 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
 
       {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
       {value && !error && (
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Searching near <span className="font-medium">{value.label}</span>
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-800 dark:bg-brand-950 dark:text-brand-200">
+          <Icon name="pin" className="h-3.5 w-3.5" />
+          Searching near <span className="font-semibold">{value.label}</span>
         </p>
       )}
     </div>

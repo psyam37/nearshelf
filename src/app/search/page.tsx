@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { NearbySearch } from "@/components/NearbySearch";
+import { Card, PageHeader, Skeleton } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { getMyPharmacy } from "@/lib/pharmacy";
 
@@ -13,15 +13,13 @@ export const metadata: Metadata = {
 // interactive search inside it is a Client Component.
 export default function SearchPage() {
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 sm:px-6">
-      <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
-        ← Home
-      </Link>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">Find a medicine</h1>
-      <p className="mt-2 mb-8 text-zinc-600 dark:text-zinc-400">
-        Pick a medicine, then where to look. Best availability is shown first, then nearest.
-      </p>
-      <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">
+      <PageHeader
+        eyebrow="Search"
+        title="Find a medicine nearby"
+        description="Pick a medicine and where to look. Pharmacies with it in stock come first, then the nearest."
+      />
+      <Suspense fallback={<SearchSkeleton />}>
         <SearchForStaff />
       </Suspense>
     </main>
@@ -32,4 +30,15 @@ export default function SearchPage() {
 async function SearchForStaff() {
   await requireUser("/search");
   return <NearbySearch myPharmacy={await getMyPharmacy()} />;
+}
+
+function SearchSkeleton() {
+  return (
+    <Card className="space-y-5 p-5 sm:p-6">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-11 w-full rounded-xl" />
+      <Skeleton className="h-4 w-16" />
+      <Skeleton className="h-11 w-full rounded-xl" />
+    </Card>
+  );
 }

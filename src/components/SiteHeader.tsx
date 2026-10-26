@@ -1,20 +1,22 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { signOut } from "@/app/sign-in/actions";
+import { NavLink } from "@/components/NavLink";
 import { RequestsLink } from "@/components/RequestsLink";
+import { Icon, Logo, button } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { getMyPharmacy } from "@/lib/pharmacy";
 import { createClient } from "@/lib/supabase/server";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-zinc-200 dark:border-zinc-800">
-      <nav className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 text-sm sm:px-6">
-        <Link href="/" className="font-semibold">
-          MediBase
+    <header className="sticky top-0 z-[500] border-b border-line bg-canvas/80 backdrop-blur-lg">
+      <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+        <Link href="/" aria-label="MediBase home" className="shrink-0">
+          <Logo />
         </Link>
         {/* The session is read per request, so only this part waits for it. */}
-        <Suspense fallback={<span className="h-5 w-16" />}>
+        <Suspense fallback={<span className="h-8 w-20" />}>
           <AccountLinks />
         </Suspense>
       </nav>
@@ -27,7 +29,7 @@ async function AccountLinks() {
 
   if (!user) {
     return (
-      <Link href="/sign-in" className="font-medium text-emerald-700 hover:underline">
+      <Link href="/sign-in" className={button.primary}>
         Sign in
       </Link>
     );
@@ -45,18 +47,30 @@ async function AccountLinks() {
     pendingCount = count ?? 0;
   }
 
+  // On phones the labels hide and only the icons show, so it all fits.
   return (
-    <div className="flex items-center gap-4">
-      <Link href="/search" className="hover:underline">
-        Search
-      </Link>
-      <Link href="/my-pharmacy" className="hover:underline">
-        My pharmacy
-      </Link>
-      {pharmacy && <RequestsLink pharmacyId={pharmacy.id} initialPending={pendingCount} />}
-      <form action={signOut}>
-        <button type="submit" className="text-zinc-500 hover:underline" title={user.email ?? ""}>
-          Sign out
+    <div className="flex items-center gap-0.5 sm:gap-1">
+      <NavLink href="/search">
+        <Icon name="search" className="h-[18px] w-[18px]" />
+        <span className="hidden sm:inline">Search</span>
+      </NavLink>
+      <NavLink href="/my-pharmacy">
+        <Icon name="store" className="h-[18px] w-[18px]" />
+        <span className="hidden sm:inline">My pharmacy</span>
+      </NavLink>
+      {pharmacy && (
+        <NavLink href="/requests">
+          <RequestsLink pharmacyId={pharmacy.id} initialPending={pendingCount} />
+        </NavLink>
+      )}
+      <form action={signOut} className="ml-1 border-l border-line pl-1.5 sm:ml-2 sm:pl-2">
+        <button
+          type="submit"
+          title={user.email ? `Sign out ${user.email}` : "Sign out"}
+          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <Icon name="logout" className="h-[18px] w-[18px]" />
+          <span className="sr-only">Sign out</span>
         </button>
       </form>
     </div>

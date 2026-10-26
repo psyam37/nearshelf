@@ -1,7 +1,9 @@
 "use client";
+// The inside of the header's Requests link: icon, label and a live count of
+// requests waiting for an answer. (The link itself is the NavLink around it.)
 
-import Link from "next/link";
 import { useState } from "react";
+import { Icon } from "@/components/ui";
 import { useTableChanges } from "@/hooks/useTableChanges";
 import { createClient } from "@/lib/supabase/client";
 
@@ -25,16 +27,19 @@ export function RequestsLink({ pharmacyId, initialPending }: RequestsLinkProps) 
   });
 
   return (
-    <Link href="/requests" className="inline-flex items-center gap-1.5 hover:underline">
-      Requests
-      {pending > 0 && (
-        <span
-          aria-label={`${pending} waiting`}
-          className="min-w-5 rounded-full bg-rose-600 px-1.5 text-center text-xs leading-5 font-semibold text-white"
-        >
-          {pending}
-        </span>
-      )}
-    </Link>
+    <>
+      <span className="relative">
+        <Icon name="inbox" className="h-[18px] w-[18px]" />
+        {pending > 0 && (
+          <span
+            aria-label={`${pending} waiting`}
+            className="absolute -top-1.5 -right-2 min-w-4 rounded-full bg-rose-600 px-1 text-center text-[10px] leading-4 font-bold text-white ring-2 ring-canvas"
+          >
+            {pending}
+          </span>
+        )}
+      </span>
+      <span className="hidden sm:inline">Requests</span>
+    </>
   );
 }

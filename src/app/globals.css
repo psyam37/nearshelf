@@ -1,25 +1,103 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* -----------------------------------------------------------------------------
+   MediBase design tokens: white, silver and green, taken from the logo.
+   Components use these names (bg-surface, text-muted, border-line,
+   bg-brand-700, text-silver-500…) instead of raw colours, so the look changes
+   here in one place, and dark mode is just a second set of values.
+   Stock levels keep their own colours (emerald / amber / rose) because those
+   carry meaning, not brand.
+   -------------------------------------------------------------------------- */
+
+@theme {
+  /* Green: the logo is brand-900 (#12392b) fading to ~brand-700 (#1c543f). */
+  --color-brand-50: #eff8f3;
+  --color-brand-100: #d9efe2;
+  --color-brand-200: #b4dec8;
+  --color-brand-300: #84c5a6;
+  --color-brand-400: #52a682;
+  --color-brand-500: #318866;
+  --color-brand-600: #236e51;
+  --color-brand-700: #1c5841;
+  --color-brand-800: #174734;
+  --color-brand-900: #12392b;
+  --color-brand-950: #08201a;
+
+  /* Silver: cool greys with a hint of green, for borders, chips and text. */
+  --color-silver-50: #f7f9f8;
+  --color-silver-100: #eff2f1;
+  --color-silver-200: #e1e6e4;
+  --color-silver-300: #c9d1ce;
+  --color-silver-400: #a6b0ac;
+  --color-silver-500: #84908b;
+  --color-silver-600: #66726d;
+  --color-silver-700: #4f5955;
+  --color-silver-800: #373e3b;
+  --color-silver-900: #222826;
+  --color-silver-950: #131716;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --canvas: #f5f7f6; /* page background: the lightest silver */
+  --surface: #ffffff; /* cards: white */
+  --surface-2: #eef2f0; /* hover, inset areas */
+  --line: #dfe5e2; /* borders: silver */
+  --ink: #0e1d17; /* main text: near-black green */
+  --muted: #5d6a65; /* secondary text */
+  --accent: #1c5841; /* links and highlights: brand-700 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --canvas: #0a110e;
+    --surface: #101915;
+    --surface-2: #17221d;
+    --line: #23302a;
+    --ink: #e6eeea;
+    --muted: #93a39c;
+    --accent: #84c5a6; /* brand-300: readable on dark */
   }
 }
 
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* The logo's own gradient, for brand panels and buttons. */
+@utility bg-logo {
+  background-image: linear-gradient(180deg, #12392b 0%, #1c543f 100%);
+}
+
+/* Brushed-silver text, for a touch of metal in headings. */
+@utility text-silver {
+  background-image: linear-gradient(180deg, #a6b0ac 0%, #66726d 100%);
+  background-clip: text;
+  color: transparent;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+/* Keyboard focus that's always visible, in the brand colour. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+/* Leaflet popups in the app's font. */
+.leaflet-container {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
 }

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { sendStockRequest, type ActionState } from "@/app/requests/actions";
+import { Icon, button } from "@/components/ui";
 
 interface AskToConfirmButtonProps {
   toPharmacyId: string;
@@ -14,18 +15,20 @@ export function AskToConfirmButton({ toPharmacyId, medicineId }: AskToConfirmBut
   });
 
   if (state.status === "done") {
-    return <span className="text-xs font-medium text-emerald-700">✓ Request sent</span>;
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent">
+        <Icon name="check" className="h-4 w-4" />
+        Request sent
+      </span>
+    );
   }
 
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="toPharmacyId" value={toPharmacyId} />
       <input type="hidden" name="medicineId" value={medicineId} />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs font-medium hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
-      >
+      <button type="submit" disabled={pending} className={button.small}>
+        <Icon name="message" className="h-3.5 w-3.5" />
         {pending ? "Sending…" : "Ask to confirm"}
       </button>
       {state.status === "error" && <span className="text-xs text-rose-600">{state.message}</span>}

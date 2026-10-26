@@ -1,5 +1,6 @@
 import { AskToConfirmButton } from "@/components/AskToConfirmButton";
 import { StockBadge } from "@/components/StockBadge";
+import { Icon } from "@/components/ui";
 import { formatDistance, formatUpdatedAgo, isStale } from "@/lib/stock";
 import type { NearbyStockResult } from "@/lib/types";
 
@@ -15,49 +16,76 @@ export function NearbyResults({ results, medicineId, myPharmacy }: NearbyResults
   const now = new Date(); // one "now" for the whole list, so every row agrees
 
   return (
-    <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+    <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
       {results.map((row) => {
         const stale = isStale(row.updated_at, now);
         const isMine = row.pharmacy_id === myPharmacy?.id;
         return (
           // A pharmacy can appear twice when equivalents are included
           // (e.g. 50mg and 100mg), so the key needs both ids.
-          <li key={`${row.pharmacy_id}:${row.medicine_id}`} className="p-4">
+          <li
+            key={`${row.pharmacy_id}:${row.medicine_id}`}
+            className={`p-4 sm:p-5 ${isMine ? "bg-brand-50/60 dark:bg-brand-950/40" : ""}`}
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-medium">
+                <p className="flex flex-wrap items-center gap-2 font-semibold">
                   {row.pharmacy_name}
                   {isMine && (
-                    <span className="ml-2 text-xs font-normal text-emerald-700">Your pharmacy</span>
+                    <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[11px] font-semibold text-brand-800 dark:bg-brand-900 dark:text-brand-200">
+                      Your pharmacy
+                    </span>
                   )}
                 </p>
-                <p className="text-sm text-zinc-500">
-                  {row.address_line}, {row.postcode} · {formatDistance(row.distance_m)}
+                <p className="mt-0.5 text-sm text-muted">
+                  {row.address_line}, {row.postcode}
                 </p>
               </div>
               <StockBadge level={row.level} />
             </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-1 font-medium text-ink">
+                <Icon name="pin" className="h-3.5 w-3.5 text-muted" />
+                {formatDistance(row.distance_m)}
+              </span>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium ${
+                  stale
+                    ? "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                    : "bg-surface-2 text-muted"
+                }`}
+              >
+                <Icon name="clock" className="h-3.5 w-3.5" />
+                {stale ? "May be out of date · " : ""}updated{" "}
+                {formatUpdatedAgo(row.updated_at, now)}
+              </span>
               {row.medicine_id !== medicineId && (
-                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-full bg-surface-2 px-2 py-1 font-medium text-ink">
                   Equivalent: {row.medicine_name}
                 </span>
               )}
-              <span className={stale ? "text-amber-700 dark:text-amber-500" : undefined}>
-                {stale ? "⚠ Possibly out of date · " : ""}updated{" "}
-                {formatUpdatedAgo(row.updated_at, now)}
-              </span>
-              {row.phone && (
-                <a href={`tel:${row.phone.replace(/\s/g, "")}`} className="underline">
-                  {row.phone}
-                </a>
-              )}
             </div>
 
-            {myPharmacy && !isMine && (
-              <div className="mt-3">
-                <AskToConfirmButton toPharmacyId={row.pharmacy_id} medicineId={row.medicine_id} />
+            {(row.phone || (myPharmacy && !isMine)) && (
+              <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-line pt-3">
+                {row.phone && (
+                  <a
+                    href={`tel:${row.phone.replace(/\s/g, "")}`}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+                  >
+                    <Icon name="phone" className="h-4 w-4" />
+                    {row.phone}
+                  </a>
+                )}
+                {myPharmacy && !isMine && (
+                  <div className="ml-auto">
+                    <AskToConfirmButton
+                      toPharmacyId={row.pharmacy_id}
+                      medicineId={row.medicine_id}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </li>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
+import { button, input } from "@/components/ui";
 import { devPasswordSignIn, type SignInState } from "./actions";
 
-const inputClass =
-  "mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900";
+const inputClass = `mt-1 ${input}`;
 
 /** Only rendered under `npm run dev`. See devPasswordSignIn. */
 export function DevSignInForm({ next }: { next: string }) {
@@ -13,17 +13,17 @@ export function DevSignInForm({ next }: { next: string }) {
   });
 
   return (
-    <details className="mt-10 rounded-lg border border-dashed border-amber-400 p-4 text-sm">
-      <summary className="cursor-pointer font-medium text-amber-700">
+    <details className="mt-6 rounded-xl border border-dashed border-amber-400/70 bg-amber-50/50 p-4 text-sm dark:bg-amber-950/20">
+      <summary className="cursor-pointer font-semibold text-amber-800 dark:text-amber-400">
         Developer sign-in (test accounts, local only)
       </summary>
       <form action={formAction} className="mt-3 space-y-3">
         <input type="hidden" name="next" value={next} />
-        <label className="block">
+        <label className="block font-medium">
           Email
           <input name="email" type="email" required autoComplete="off" className={inputClass} />
         </label>
-        <label className="block">
+        <label className="block font-medium">
           Password
           <input
             name="password"
@@ -34,11 +34,7 @@ export function DevSignInForm({ next }: { next: string }) {
           />
         </label>
         {state.status === "error" && <p className="text-rose-600">{state.message}</p>}
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-lg border border-zinc-300 px-3 py-2 font-medium disabled:opacity-60 dark:border-zinc-700"
-        >
+        <button type="submit" disabled={pending} className={`${button.secondary} w-full`}>
           {pending ? "Signing in…" : "Sign in with password"}
         </button>
       </form>

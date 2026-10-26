@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Icon, button } from "@/components/ui";
 import { respondToRequest, type ActionState } from "./actions";
 
 export function RespondButtons({ requestId }: { requestId: string }) {
@@ -16,8 +17,9 @@ export function RespondButtons({ requestId }: { requestId: string }) {
         name="status"
         value="confirmed"
         disabled={pending}
-        className="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
+        className={button.primary}
       >
+        <Icon name="check" className="h-4 w-4" />
         Yes, we have it
       </button>
       <button
@@ -25,9 +27,9 @@ export function RespondButtons({ requestId }: { requestId: string }) {
         name="status"
         value="declined"
         disabled={pending}
-        className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
+        className={button.secondary}
       >
-        No
+        No, we don&apos;t
       </button>
       {state.status === "error" && <span className="text-xs text-rose-600">{state.message}</span>}
     </form>

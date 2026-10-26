@@ -91,23 +91,23 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       role="dialog"
       aria-modal="true"
       aria-label="Scan a barcode"
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-brand-950/70 p-4 backdrop-blur-sm"
     >
-      <div className="w-full max-w-md rounded-xl bg-white p-4 dark:bg-zinc-900">
-        <p className="font-medium">Scan the pack&apos;s barcode</p>
-        <p className="mt-1 text-sm text-zinc-500">
+      <div className="w-full max-w-md rounded-2xl border border-line bg-surface p-5 shadow-2xl">
+        <p className="text-lg font-semibold">Scan the pack&apos;s barcode</p>
+        <p className="mt-1 text-sm text-muted">
           Hold the barcode or the square code steady in the frame.
         </p>
-        <div className="relative mt-3 overflow-hidden rounded-lg bg-black">
+        <div className="relative mt-4 overflow-hidden rounded-xl bg-black">
           <video ref={videoRef} muted playsInline className="aspect-[4/3] w-full object-cover" />
           {/* A guide box so people know where to aim. */}
-          <div className="pointer-events-none absolute inset-x-8 top-1/2 h-24 -translate-y-1/2 rounded-md border-2 border-emerald-400" />
+          <div className="pointer-events-none absolute inset-x-8 top-1/2 h-24 -translate-y-1/2 rounded-md border-2 border-brand-300" />
         </div>
         {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 w-full rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+          className="mt-4 w-full rounded-xl border border-line px-4 py-2.5 text-sm font-semibold hover:bg-surface-2"
         >
           Cancel
         </button>

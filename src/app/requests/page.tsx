@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense, type ReactNode } from "react";
+import { Suspense } from "react";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { EmptyState, Icon, ListSkeleton, PageHeader, Skeleton } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { getMyPharmacy, type MyPharmacy } from "@/lib/pharmacy";
 import { formatUpdatedAgo } from "@/lib/stock";
@@ -16,8 +17,7 @@ export const metadata: Metadata = {
 export default function RequestsPage() {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Stock requests</h1>
-      <Suspense fallback={<p className="mt-6 text-sm text-zinc-500">Loading requests…</p>}>
+      <Suspense fallback={<RequestsSkeleton />}>
         <Requests />
       </Suspense>
     </main>
@@ -29,19 +29,26 @@ async function Requests() {
   const myPharmacy = await getMyPharmacy();
   if (!myPharmacy) {
     return (
-      <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-        Your account isn&apos;t linked to a pharmacy yet. See{" "}
-        <Link href="/my-pharmacy" className="underline">
-          My pharmacy
-        </Link>
-        .
-      </p>
+      <>
+        <PageHeader eyebrow="Requests" title="Stock requests" />
+        <EmptyState icon="store">
+          Your account isn&apos;t linked to a pharmacy yet. See{" "}
+          <Link href="/my-pharmacy" className="font-medium text-accent underline">
+            My pharmacy
+          </Link>
+          .
+        </EmptyState>
+      </>
     );
   }
 
   return (
     <>
-      <p className="mt-1 text-sm text-zinc-500">For {myPharmacy.name}</p>
+      <PageHeader
+        eyebrow={myPharmacy.name}
+        title="Stock requests"
+        description="Pharmacies asking whether you have a medicine, and the answers to what you asked. Updates live."
+      />
       {/* Two listeners, because a Realtime filter can only check one column. */}
       <LiveRefresh table="stock_requests" filter={`to_pharmacy_id=eq.${myPharmacy.id}`} />
       <LiveRefresh table="stock_requests" filter={`from_pharmacy_id=eq.${myPharmacy.id}`} />
@@ -81,21 +88,34 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
   const answered = incoming.data.filter((r) => r.status !== "pending");
 
   return (
-    <div className="mt-8 space-y-10">
+    <div className="space-y-10">
       <section>
-        <h2 className="text-lg font-semibold">Waiting for your answer ({pending.length})</h2>
+        <SectionTitle count={pending.length}>Waiting for your answer</SectionTitle>
         {pending.length === 0 ? (
-          <Empty>No one is waiting on you right now.</Empty>
+          <EmptyState icon="inbox">No one is waiting on you right now.</EmptyState>
         ) : (
-          <ul className="mt-3 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <ul className="space-y-3">
             {pending.map((r) => (
-              <li key={r.id} className="space-y-3 p-4">
-                <p>
-                  <strong>{r.from.name}</strong> asks if you have <strong>{r.medicine.name}</strong>
-                </p>
-                {r.message && <p className="text-sm text-zinc-600">“{r.message}”</p>}
-                <p className="text-xs text-zinc-500">{formatUpdatedAgo(r.created_at, now)}</p>
-                <RespondButtons requestId={r.id} />
+              <li
+                key={r.id}
+                className="rounded-2xl border border-brand-200 bg-surface p-5 shadow-sm ring-4 ring-brand-500/5 dark:border-brand-800"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="rounded-xl bg-brand-50 p-2 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+                    <Icon name="message" className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p>
+                      <strong>{r.from.name}</strong> asks if you have{" "}
+                      <strong>{r.medicine.name}</strong>
+                    </p>
+                    {r.message && <p className="mt-1 text-sm text-muted">“{r.message}”</p>}
+                    <p className="mt-1 text-xs text-muted">{formatUpdatedAgo(r.created_at, now)}</p>
+                    <div className="mt-4">
+                      <RespondButtons requestId={r.id} />
+                    </div>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
@@ -103,25 +123,23 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold">You asked</h2>
+        <SectionTitle>You asked</SectionTitle>
         {outgoing.data.length === 0 ? (
-          <Empty>
-            Use <strong>Ask to confirm</strong> on a{" "}
-            <Link href="/search" className="underline">
+          <EmptyState icon="message">
+            Use <strong className="text-ink">Ask to confirm</strong> on a{" "}
+            <Link href="/search" className="font-medium text-accent underline">
               search
             </Link>{" "}
-            result.
-          </Empty>
+            result, and the answer shows up here.
+          </EmptyState>
         ) : (
-          <ul className="mt-3 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
             {outgoing.data.map((r) => (
-              <li key={r.id} className="flex items-start justify-between gap-3 p-4">
-                <div>
-                  <p>
-                    <strong>{r.medicine.name}</strong> at {r.to.name}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    asked {formatUpdatedAgo(r.created_at, now)}
+              <li key={r.id} className="flex items-center justify-between gap-3 p-4 sm:px-5">
+                <div className="min-w-0">
+                  <p className="font-semibold">{r.medicine.name}</p>
+                  <p className="text-sm text-muted">
+                    at {r.to.name} · asked {formatUpdatedAgo(r.created_at, now)}
                     {r.responded_at && ` · answered ${formatUpdatedAgo(r.responded_at, now)}`}
                   </p>
                 </div>
@@ -134,12 +152,16 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
 
       {answered.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold">You answered</h2>
-          <ul className="mt-3 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <SectionTitle>You answered</SectionTitle>
+          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
             {answered.map((r) => (
-              <li key={r.id} className="flex items-start justify-between gap-3 p-4 text-sm">
-                <span>
-                  {r.medicine.name} for {r.from.name}
+              <li
+                key={r.id}
+                className="flex items-center justify-between gap-3 p-4 text-sm sm:px-5"
+              >
+                <span className="min-w-0">
+                  <span className="font-semibold">{r.medicine.name}</span>{" "}
+                  <span className="text-muted">for {r.from.name}</span>
                 </span>
                 <StatusPill status={r.status} />
               </li>
@@ -151,10 +173,24 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
   );
 }
 
+function SectionTitle({ children, count }: { children: string; count?: number }) {
+  return (
+    <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+      {children}
+      {count !== undefined && count > 0 && (
+        <span className="rounded-full bg-rose-600 px-2 text-xs leading-5 font-bold text-white">
+          {count}
+        </span>
+      )}
+    </h2>
+  );
+}
+
 const STATUS_STYLES: Record<RequestStatus, string> = {
-  pending: "bg-zinc-100 text-zinc-700",
-  confirmed: "bg-emerald-100 text-emerald-800",
-  declined: "bg-rose-100 text-rose-800",
+  pending: "bg-surface-2 text-muted ring-line",
+  confirmed:
+    "bg-emerald-50 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-950 dark:text-emerald-300",
+  declined: "bg-rose-50 text-rose-800 ring-rose-600/20 dark:bg-rose-950 dark:text-rose-300",
 };
 const STATUS_LABELS: Record<RequestStatus, string> = {
   pending: "Waiting",
@@ -165,13 +201,19 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
 function StatusPill({ status }: { status: RequestStatus }) {
   return (
     <span
-      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[status]}`}
+      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLES[status]}`}
     >
       {STATUS_LABELS[status]}
     </span>
   );
 }
 
-function Empty({ children }: { children: ReactNode }) {
-  return <p className="mt-3 text-sm text-zinc-500">{children}</p>;
+function RequestsSkeleton() {
+  return (
+    <div>
+      <Skeleton className="h-3 w-40" />
+      <Skeleton className="mt-3 mb-10 h-8 w-64" />
+      <ListSkeleton rows={3} />
+    </div>
+  );
 }
