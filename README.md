@@ -1,4 +1,4 @@
-# Pharmacy Stock Finder
+# MediBase
 
 When a pharmacy can't fill a prescription, staff phone around nearby pharmacies to find one that has the medicine. This app lets pharmacy teams see, at a glance, which pharmacies near them have a medicine in stock, and ask one to confirm.
 

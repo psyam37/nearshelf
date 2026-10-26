@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { getMyPharmacy } from "@/lib/pharmacy";
 
 export const metadata: Metadata = {
-  title: "Find a medicine · Pharmacy Stock Finder",
+  title: "Find a medicine",
 };
 
 // A Server Component (the default): it renders the static parts, and the

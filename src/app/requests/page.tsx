@@ -10,7 +10,7 @@ import type { RequestStatus } from "@/lib/types";
 import { RespondButtons } from "./RespondButtons";
 
 export const metadata: Metadata = {
-  title: "Requests · Pharmacy Stock Finder",
+  title: "Requests",
 };
 
 export default function RequestsPage() {

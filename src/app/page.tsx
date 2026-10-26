@@ -11,11 +11,9 @@ export default function Home() {
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6">
       <header className="mb-10">
         <p className="text-sm font-medium tracking-wide text-emerald-700 uppercase">
-          Baseline · Day 1
+          Medicine stock, shared between pharmacies
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Pharmacy Stock Finder
-        </h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">MediBase</h1>
         <p className="mt-3 max-w-prose text-zinc-600 dark:text-zinc-400">
           Helps pharmacy teams see which nearby pharmacies have a medicine in stock, instead of
           phoning around. Shows availability levels, not exact counts, with when each was last

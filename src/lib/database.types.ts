@@ -14,6 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      medicine_barcodes: {
+        Row: {
+          gtin: string
+          medicine_id: string
+        }
+        Insert: {
+          gtin: string
+          medicine_id: string
+        }
+        Update: {
+          gtin?: string
+          medicine_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicine_barcodes_medicine_id_fkey"
+            columns: ["medicine_id"]
+            isOneToOne: false
+            referencedRelation: "medicines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicines: {
         Row: {
           created_at: string

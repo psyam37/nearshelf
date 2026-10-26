@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pharmacy Stock Finder",
+  // Pages set just their own part, e.g. "Requests" → "Requests · MediBase".
+  title: { default: "MediBase", template: "%s · MediBase" },
   description: "See which nearby pharmacies have a medicine in stock.",
 };
 

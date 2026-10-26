@@ -6,7 +6,7 @@ import { DevSignInForm } from "./DevSignInForm";
 import { SignInForm } from "./SignInForm";
 
 export const metadata: Metadata = {
-  title: "Sign in · Pharmacy Stock Finder",
+  title: "Sign in",
 };
 
 export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {

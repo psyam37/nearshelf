@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StockLevelForm } from "./StockLevelForm";
 
 export const metadata: Metadata = {
-  title: "My pharmacy · Pharmacy Stock Finder",
+  title: "My pharmacy",
 };
 
 export default function MyPharmacyPage() {

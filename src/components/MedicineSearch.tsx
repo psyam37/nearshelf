@@ -1,12 +1,18 @@
 "use client";
 // Runs in the browser: it reacts to typing and arrow keys.
 
+import dynamic from "next/dynamic";
 import { useEffect, useId, useState, type KeyboardEvent } from "react";
+import type { BarcodeLookupResponse } from "@/app/api/barcodes/[gtin]/route";
 import type { MedicineSearchResponse } from "@/app/api/medicines/route";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { GTIN_PATTERN } from "@/lib/gtin";
 import type { Medicine } from "@/lib/types";
 
 const MIN_QUERY_LENGTH = 2; // matches medicineSearchSchema
+
+// The camera scanner (and its barcode library) only loads when opened.
+const BarcodeScanner = dynamic(() => import("@/components/BarcodeScanner"), { ssr: false });
 
 // The last answer from the server, remembered with the query it was for.
 // Comparing `forQuery` with what's in the box tells us if we're still loading.
@@ -26,12 +32,17 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
   const [activeIndex, setActiveIndex] = useState(-1); // highlighted row, -1 = none
   const [selected, setSelected] = useState<Medicine | null>(null);
   const [open, setOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [barcodeMessage, setBarcodeMessage] = useState<string | null>(null);
 
   const listId = useId();
   const trimmed = query.trim();
+  // All digits = a barcode number (typed, or "typed" by a USB scanner).
+  const isBarcode = GTIN_PATTERN.test(trimmed);
   const debouncedQuery = useDebouncedValue(trimmed, 250);
   // Once a medicine is picked the box holds its full name; no need to search for it.
-  const canSearch = debouncedQuery.length >= MIN_QUERY_LENGTH && selected === null;
+  const canSearch =
+    debouncedQuery.length >= MIN_QUERY_LENGTH && selected === null && !/^\d+$/.test(debouncedQuery);
 
   // Fetch whenever the debounced query changes.
   useEffect(() => {
@@ -55,7 +66,7 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
 
   // Work out what to show from the state above, rather than storing it too.
   const isCurrent = result?.forQuery === trimmed;
-  const loading = trimmed.length >= MIN_QUERY_LENGTH && !isCurrent;
+  const loading = trimmed.length >= MIN_QUERY_LENGTH && !isCurrent && !isBarcode;
   // `"medicines" in result.response` narrows the union type: inside this
   // branch TypeScript knows response is the { medicines } variant.
   const medicines: Medicine[] =
@@ -71,6 +82,25 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
     onSelect?.(medicine);
   }
 
+  async function lookUpBarcode(gtin: string) {
+    setScannerOpen(false);
+    setQuery(gtin);
+    setOpen(false);
+    setBarcodeMessage("Looking up barcode…");
+    try {
+      const res = await fetch(`/api/barcodes/${gtin}`);
+      const data = (await res.json()) as BarcodeLookupResponse;
+      if ("medicine" in data) {
+        setBarcodeMessage(null);
+        choose(data.medicine);
+      } else {
+        setBarcodeMessage(data.error);
+      }
+    } catch {
+      setBarcodeMessage("Couldn't reach the server");
+    }
+  }
+
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault(); // stop the cursor jumping to the start/end
@@ -80,6 +110,11 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
       // Wrap around: down from the last row goes to the first, and back.
       setActiveIndex((i) => (i + step + medicines.length) % medicines.length);
     } else if (event.key === "Enter") {
+      if (isBarcode && selected === null) {
+        event.preventDefault();
+        void lookUpBarcode(trimmed);
+        return;
+      }
       const medicine = medicines[activeIndex];
       if (showList && medicine) {
         event.preventDefault();
@@ -96,7 +131,7 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
       <label htmlFor={`${listId}-input`} className="block text-sm font-medium">
         Medicine
       </label>
-      <div className="relative mt-1">
+      <div className="relative mt-1 flex gap-2">
         <input
           id={`${listId}-input`}
           type="text"
@@ -106,10 +141,11 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
           aria-controls={listId}
           aria-activedescendant={activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
           autoComplete="off"
-          placeholder="Start typing, e.g. amoxicillin"
+          placeholder="Type a name, e.g. amoxicillin, or scan"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
+            setBarcodeMessage(null);
             if (selected) onSelect?.(null);
             setSelected(null);
             setActiveIndex(-1);
@@ -118,12 +154,16 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base shadow-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base shadow-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-900"
         />
 
         {showList && (
-          <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
-            {loading ? (
+          <div className="absolute top-full z-10 mt-1 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+            {isBarcode ? (
+              <p className="px-3 py-2.5 text-sm text-zinc-500">
+                Press Enter to look up barcode {trimmed}
+              </p>
+            ) : loading ? (
               <p className="px-3 py-2.5 text-sm text-zinc-500">Searching…</p>
             ) : error ? (
               <p className="px-3 py-2.5 text-sm text-rose-600">{error}</p>
@@ -162,7 +202,26 @@ export function MedicineSearch({ onSelect }: MedicineSearchProps) {
             )}
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={() => setScannerOpen(true)}
+          aria-label="Scan a barcode with the camera"
+          title="Scan a barcode"
+          className="shrink-0 rounded-lg border border-zinc-300 px-3 text-lg hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+        >
+          ▥
+        </button>
       </div>
+
+      {barcodeMessage && (
+        <p aria-live="polite" className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          {barcodeMessage}
+        </p>
+      )}
+      {scannerOpen && (
+        <BarcodeScanner onDetected={lookUpBarcode} onClose={() => setScannerOpen(false)} />
+      )}
 
       {selected && (
         <div className="mt-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
