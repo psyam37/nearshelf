@@ -3,6 +3,7 @@
 // level first, then nearest.
 import { z } from "zod";
 import { NextResponse, type NextRequest } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import { nearbyStockSchema } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
 import type { NearbyStockResult } from "@/lib/types";
@@ -10,6 +11,12 @@ import type { NearbyStockResult } from "@/lib/types";
 export type NearbyStockResponse = { results: NearbyStockResult[] } | { error: string };
 
 export async function GET(request: NextRequest) {
+  // Stock levels are for signed-in staff. The database enforces this too (row
+  // level security), but it would just return no rows, which looks like a bug.
+  if (!(await getCurrentUser())) {
+    return NextResponse.json<NearbyStockResponse>({ error: "Please sign in" }, { status: 401 });
+  }
+
   const parsed = nearbyStockSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json<NearbyStockResponse>(

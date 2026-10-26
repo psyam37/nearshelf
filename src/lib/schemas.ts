@@ -34,3 +34,10 @@ export const stockRequestSchema = z.object({
   message: z.string().trim().max(500).optional(),
 });
 export type StockRequestInput = z.infer<typeof stockRequestSchema>;
+
+export const signInSchema = z.object({
+  // Tidy first, then check: z.email().trim() would reject " me@example.com".
+  email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address")),
+  next: z.string().optional(),
+});
+export type SignInInput = z.infer<typeof signInSchema>;
