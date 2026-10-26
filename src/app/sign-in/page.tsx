@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getCurrentUser, safeNextPath } from "@/lib/auth";
+import { DevSignInForm } from "./DevSignInForm";
 import { SignInForm } from "./SignInForm";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ async function SignInContent({ searchParams }: Pick<PageProps<"/sign-in">, "sear
         </p>
       )}
       <SignInForm next={next} />
+      {process.env.NODE_ENV === "development" && <DevSignInForm next={next} />}
     </>
   );
 }
