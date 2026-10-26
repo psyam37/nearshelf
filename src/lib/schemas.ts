@@ -15,7 +15,8 @@ export const nearbyStockSchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
   radiusM: z.coerce.number().int().min(100).max(50_000).default(5_000),
-  includeEquivalents: z.coerce.boolean().default(false),
+  // Not z.coerce.boolean(): that turns the string "false" into true.
+  includeEquivalents: z.stringbool().default(false),
 });
 export type NearbyStockInput = z.infer<typeof nearbyStockSchema>;
 

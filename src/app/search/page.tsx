@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MedicineSearch } from "@/components/MedicineSearch";
+import { NearbySearch } from "@/components/NearbySearch";
 
 export const metadata: Metadata = {
   title: "Find a medicine · Pharmacy Stock Finder",
@@ -16,9 +16,9 @@ export default function SearchPage() {
       </Link>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">Find a medicine</h1>
       <p className="mt-2 mb-8 text-zinc-600 dark:text-zinc-400">
-        Search by name. Use the arrow keys and Enter to pick one.
+        Pick a medicine, then where to look. Best availability is shown first, then nearest.
       </p>
-      <MedicineSearch />
+      <NearbySearch />
     </main>
   );
 }

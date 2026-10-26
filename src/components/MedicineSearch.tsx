@@ -15,7 +15,12 @@ interface SearchResult {
   response: MedicineSearchResponse;
 }
 
-export function MedicineSearch({ onSelect }: { onSelect?: (medicine: Medicine) => void }) {
+interface MedicineSearchProps {
+  /** Called with the picked medicine, or null when the user starts typing again. */
+  onSelect?: (medicine: Medicine | null) => void;
+}
+
+export function MedicineSearch({ onSelect }: MedicineSearchProps) {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<SearchResult | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1); // highlighted row, -1 = none
@@ -105,6 +110,7 @@ export function MedicineSearch({ onSelect }: { onSelect?: (medicine: Medicine) =
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
+            if (selected) onSelect?.(null);
             setSelected(null);
             setActiveIndex(-1);
             setOpen(true);
