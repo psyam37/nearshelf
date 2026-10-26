@@ -24,8 +24,7 @@ export function NearbySearch() {
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [location, setLocation] = useState<NamedLocation | null>(null);
   const [radiusKm, setRadiusKm] = useState<number>(5);
-  // TODO (your turn): make this a checkbox the user can tick. See the chat.
-  const includeEquivalents = false;
+  const [includeEquivalents, setIncludeEquivalents] = useState(false);
   const [result, setResult] = useState<{ forUrl: string; response: NearbyStockResponse } | null>(
     null,
   );
@@ -78,6 +77,15 @@ export function NearbySearch() {
               </option>
             ))}
           </select>
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 select-none">
+          <input
+            type="checkbox"
+            checked={includeEquivalents}
+            onChange={(e) => setIncludeEquivalents(e.target.checked)}
+            className="h-4 w-4 rounded border-zinc-300 accent-emerald-700"
+          />
+          <span>Include equivalents</span>
         </label>
       </div>
 
