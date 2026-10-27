@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071d16"/>
+      <stop offset="0.55" stop-color="#12392b"/>
+      <stop offset="1" stop-color="#1c543f"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.78" cy="0.35" r="0.5">
+      <stop offset="0" stop-color="#52a682" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#52a682" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.12" cy="0.95" r="0.45">
+      <stop offset="0" stop-color="#84c5a6" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#84c5a6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef2f1"/>
+      <stop offset="1" stop-color="#a6b0ac"/>
+    </linearGradient>
+    <linearGradient id="logo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12392b"/>
+      <stop offset="1" stop-color="#1c543f"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" opacity="0.06"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <clipPath id="frame"><rect width="1280" height="460" rx="28"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="460" fill="url(#bg)"/>
+    <rect width="1280" height="460" fill="url(#dots)"/>
+    <rect width="1280" height="460" fill="url(#glow1)"/>
+    <rect width="1280" height="460" fill="url(#glow2)"/>
+    <!-- a faint map grid behind the card -->
+    <g stroke="#84c5a6" stroke-opacity="0.12" fill="none" stroke-width="2">
+      <path d="M700 40 C 820 120, 900 80, 1060 170 S 1240 260, 1300 230"/>
+      <path d="M660 420 C 780 330, 880 360, 1000 300 S 1180 330, 1300 380"/>
+      <circle cx="1010" cy="230" r="150"/>
+      <circle cx="1010" cy="230" r="230"/>
+    </g>
+  </g>
+
+  <!-- Logo -->
+  <g transform="translate(80 92) scale(0.1875)" filter="url(#soft)">
+    <rect width="512" height="512" rx="116" fill="url(#logo)" stroke="#52a682" stroke-opacity="0.5" stroke-width="6"/>
+    <g fill="none" stroke="#fff" stroke-width="26" stroke-linejoin="round">
+      <rect x="116.5" y="116.5" width="278" height="278" rx="78"/>
+      <path d="M217 172Q217 163 226 163L285 163Q294 163 294 172L294 213Q294 217 298 217L339 217Q348 217 348 226L348 285Q348 294 339 294L298 294Q294 294 294 298L294 339Q294 348 285 348L226 348Q217 348 217 339L217 298Q217 294 213 294L172 294Q163 294 163 285L163 226Q163 217 172 217L213 217Q217 217 217 213Z"/>
+    </g>
+  </g>
+
+  <!-- Wordmark and tagline -->
+  <text x="80" y="250" font-size="80" font-weight="700" fill="#ffffff" letter-spacing="-2">Medi<tspan fill="url(#silver)">Base</tspan></text>
+  <text x="82" y="298" font-size="25" font-weight="500" fill="#d9efe2">Live medicine stock between nearby pharmacies.</text>
+  <text x="82" y="332" font-size="25" font-weight="500" fill="#84c5a6">Find it. Hold it. Skip the phone calls.</text>
+
+  <!-- Chips -->
+  <g font-size="15" font-weight="600" fill="#d9efe2">
+    <g transform="translate(80 368)"><rect width="158" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.18"/><circle cx="20" cy="18" r="4.5" fill="#34d399"/><text x="34" y="23">Live via Realtime</text></g>
+    <g transform="translate(250 368)"><rect width="170" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.18"/><text x="18" y="23">GPhC-verified staff</text></g>
+    <g transform="translate(432 368)"><rect width="168" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.18"/><text x="18" y="23">No patient data</text></g>
+  </g>
+
+  <!-- App card -->
+  <g transform="translate(760 70)" filter="url(#shadow)">
+    <rect width="440" height="300" rx="22" fill="#ffffff"/>
+    <rect x="20" y="20" width="400" height="46" rx="12" fill="#f5f7f6" stroke="#dfe5e2"/>
+    <circle cx="44" cy="43" r="8" fill="none" stroke="#5d6a65" stroke-width="2.4"/>
+    <path d="M50 49 L56 55" stroke="#5d6a65" stroke-width="2.4" stroke-linecap="round"/>
+    <text x="66" y="49" font-size="17" font-weight="600" fill="#0e1d17">Sertraline 50mg tablets</text>
+    <rect x="336" y="32" width="72" height="22" rx="6" fill="#eef2f0"/><text x="372" y="48" font-size="12" text-anchor="middle" fill="#5d6a65">near N1</text>
+
+    <g font-size="15">
+      <text x="24" y="104" font-weight="650" fill="#0e1d17">Hoxton Square Pharmacy</text>
+      <text x="24" y="124" font-size="12.5" fill="#5d6a65">0.1 mi · confirmed 8 min ago</text>
+      <rect x="318" y="92" width="98" height="26" rx="13" fill="#ecfdf5" stroke="#a7f3d0"/><circle cx="334" cy="105" r="4" fill="#10b981"/><text x="344" y="110" font-size="13" font-weight="700" fill="#065f46">In stock</text>
+      <line x1="24" y1="140" x2="416" y2="140" stroke="#e1e6e4"/>
+
+      <text x="24" y="168" font-weight="650" fill="#0e1d17">Old Street Chemist</text>
+      <text x="24" y="188" font-size="12.5" fill="#5d6a65">0.3 mi · confirmed 25 min ago</text>
+      <rect x="306" y="156" width="110" height="26" rx="13" fill="#fffbeb" stroke="#fde68a"/><circle cx="322" cy="169" r="4" fill="#f59e0b"/><text x="332" y="174" font-size="13" font-weight="700" fill="#92400e">Low stock</text>
+      <line x1="24" y1="204" x2="416" y2="204" stroke="#e1e6e4"/>
+
+      <text x="24" y="232" font-weight="650" fill="#0e1d17">Haggerston Pharmacy</text>
+      <text x="24" y="252" font-size="12.5" fill="#b45309">Said “In stock” 3 h ago · call to check</text>
+      <rect x="298" y="220" width="118" height="26" rx="13" fill="#eff2f1" stroke="#c9d1ce"/><circle cx="314" cy="233" r="4" fill="#a6b0ac"/><text x="324" y="238" font-size="13" font-weight="700" fill="#4f5955">Unverified</text>
+    </g>
+    <rect x="20" y="266" width="400" height="0" fill="none"/>
+  </g>
+
+  <!-- Push notification -->
+  <g transform="translate(640 300)" filter="url(#shadow)">
+    <rect width="380" height="96" rx="20" fill="#0f1915" fill-opacity="0.92" stroke="#ffffff" stroke-opacity="0.12"/>
+    <g transform="translate(18 20) scale(0.1)">
+      <rect width="512" height="512" rx="116" fill="url(#logo)"/>
+      <g fill="none" stroke="#fff" stroke-width="30" stroke-linejoin="round"><rect x="116.5" y="116.5" width="278" height="278" rx="78"/><path d="M217 172Q217 163 226 163L285 163Q294 163 294 172L294 213Q294 217 298 217L339 217Q348 217 348 226L348 285Q348 294 339 294L298 294Q294 294 294 298L294 339Q294 348 285 348L226 348Q217 348 217 339L217 298Q217 294 213 294L172 294Q163 294 163 285L163 226Q163 217 172 217L213 217Q217 217 217 213Z"/></g>
+    </g>
+    <text x="84" y="34" font-size="12" font-weight="600" fill="#93a39c" letter-spacing="0.6">MEDIBASE · NOW</text>
+    <text x="84" y="57" font-size="16" font-weight="700" fill="#ffffff">Patient waiting: Sertraline 50mg</text>
+    <text x="84" y="78" font-size="13.5" fill="#d9efe2">Hoxton Square Pharmacy is asking for 2 packs</text>
+  </g>
+</svg>
