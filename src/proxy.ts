@@ -8,7 +8,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
 import { getEnv } from "@/lib/env";
 
-const SIGNED_IN_ONLY = ["/search", "/my-pharmacy", "/requests"];
+const SIGNED_IN_ONLY = ["/search", "/my-pharmacy", "/requests", "/join", "/admin"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

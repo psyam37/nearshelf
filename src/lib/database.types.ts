@@ -138,6 +138,65 @@ export type Database = {
           },
         ]
       }
+      platform_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      staff_applications: {
+        Row: {
+          created_at: string
+          full_name: string
+          gphc_number: string
+          id: string
+          pharmacy_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          gphc_number: string
+          id?: string
+          pharmacy_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          gphc_number?: string
+          id?: string
+          pharmacy_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_applications_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_requests: {
         Row: {
           broadcast_id: string | null
@@ -265,6 +324,8 @@ export type Database = {
           recipients: number
         }[]
       }
+      is_manager_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       is_staff_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
       nearby_stock: {
         Args: {
@@ -292,6 +353,10 @@ export type Database = {
         }[]
       }
       reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
+      review_staff_application: {
+        Args: { p_application_id: string; p_approve: boolean }
+        Returns: Database["public"]["Enums"]["application_status"]
+      }
       search_medicines: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -314,6 +379,7 @@ export type Database = {
       stock_verified_window: { Args: never; Returns: string }
     }
     Enums: {
+      application_status: "pending" | "approved" | "rejected"
       request_status: "pending" | "confirmed" | "declined"
       stock_level: "in_stock" | "low" | "out_of_stock"
     }
@@ -443,6 +509,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      application_status: ["pending", "approved", "rejected"],
       request_status: ["pending", "confirmed", "declined"],
       stock_level: ["in_stock", "low", "out_of_stock"],
     },

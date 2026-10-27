@@ -5,7 +5,7 @@ import { NavLink } from "@/components/NavLink";
 import { RequestsLink } from "@/components/RequestsLink";
 import { Icon, Logo, button } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
-import { getMyPharmacy } from "@/lib/pharmacy";
+import { getMyPharmacy, isPlatformAdmin } from "@/lib/pharmacy";
 import { createClient } from "@/lib/supabase/server";
 
 export function SiteHeader() {
@@ -35,7 +35,7 @@ async function AccountLinks() {
     );
   }
 
-  const pharmacy = await getMyPharmacy();
+  const [pharmacy, admin] = await Promise.all([getMyPharmacy(), isPlatformAdmin()]);
   let pendingCount = 0;
   if (pharmacy) {
     const supabase = await createClient();
@@ -61,6 +61,12 @@ async function AccountLinks() {
       {pharmacy && (
         <NavLink href="/requests">
           <RequestsLink pharmacyId={pharmacy.id} initialPending={pendingCount} />
+        </NavLink>
+      )}
+      {admin && (
+        <NavLink href="/admin">
+          <Icon name="shield" className="h-[18px] w-[18px]" />
+          <span className="hidden sm:inline">Admin</span>
         </NavLink>
       )}
       <form action={signOut} className="ml-1 border-l border-line pl-1.5 sm:ml-2 sm:pl-2">

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
+import { ApplicationsList } from "@/components/ApplicationsList";
 import { StockBadge } from "@/components/StockBadge";
-import { Card, ListSkeleton, PageHeader, Skeleton } from "@/components/ui";
+import { Card, Icon, ListSkeleton, PageHeader, Skeleton, button } from "@/components/ui";
 import { requireUser, type CurrentUser } from "@/lib/auth";
 import { STOCK_LABELS, UNVERIFIED_AFTER_HOURS, formatUpdatedAgo, isVerified } from "@/lib/stock";
 import { createClient } from "@/lib/supabase/server";
@@ -119,6 +121,18 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
         ))}
       </div>
 
+      {role === "manager" && (
+        <section className="mt-10">
+          <h2 className="mb-1 text-lg font-semibold">Staff applications</h2>
+          <p className="mb-3 text-sm text-muted">
+            People asking to join {pharmacy.name}. Check each GPhC number before approving.
+          </p>
+          <Suspense fallback={<ListSkeleton rows={1} />}>
+            <ApplicationsList pharmacyId={pharmacy.id} />
+          </Suspense>
+        </section>
+      )}
+
       <h2 className="mt-10 mb-3 text-lg font-semibold">Stock levels</h2>
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         {medicines.data.map((medicine) => {
@@ -175,29 +189,22 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
 }
 
 function NotLinkedYet({ user }: { user: CurrentUser }) {
-  const sql = `insert into public.pharmacy_staff (user_id, pharmacy_id, role)
-select '${user.id}', id, 'manager'
-from public.pharmacies where ods_code = 'DEMO01';`;
-
   return (
-    <section className="max-w-2xl">
+    <section className="max-w-xl">
       <PageHeader
         eyebrow="My pharmacy"
-        title="You're not linked to a pharmacy yet"
+        title="You're not part of a pharmacy yet"
         description={
           <>
-            You&apos;re signed in as <strong className="text-ink">{user.email}</strong>. In a real
-            launch, a pharmacy manager would invite you.
+            You&apos;re signed in as <strong className="text-ink">{user.email}</strong>. To see and
+            update stock, join your pharmacy with your GPhC number. A manager there verifies you.
           </>
         }
       />
-      <Card className="p-5">
-        <p className="text-sm text-muted">
-          For the demo, run this in the Supabase SQL Editor to join{" "}
-          <strong className="text-ink">Hoxton Square Pharmacy</strong>, then refresh this page:
-        </p>
-        <pre className="mt-3 overflow-x-auto rounded-xl bg-surface-2 p-4 text-xs">{sql}</pre>
-      </Card>
+      <Link href="/join" className={button.primary}>
+        Join your pharmacy
+        <Icon name="arrow" className="h-4 w-4" />
+      </Link>
     </section>
   );
 }

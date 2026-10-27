@@ -55,3 +55,18 @@ export const broadcastSchema = z.object({
   quantity: z.coerce.number().int().min(1, "At least 1 pack").max(100).default(1),
 });
 export type BroadcastInput = z.infer<typeof broadcastSchema>;
+
+// Applying to join a pharmacy. Spaces are removed and letters upper-cased
+// first, so "fa 076" and "123 4567" are accepted as typed.
+export const joinSchema = z.object({
+  fullName: z.string().trim().min(2, "Enter your full name").max(100),
+  gphcNumber: z
+    .string()
+    .transform((s) => s.replace(/\s/g, ""))
+    .pipe(z.string().regex(/^\d{7}$/, "A GPhC registration number is 7 digits")),
+  odsCode: z
+    .string()
+    .transform((s) => s.replace(/\s/g, "").toUpperCase())
+    .pipe(z.string().regex(/^[A-Z0-9]{3,10}$/, "Enter your pharmacy's ODS code, e.g. FA123")),
+});
+export type JoinInput = z.infer<typeof joinSchema>;
