@@ -29,9 +29,16 @@ async function AccountLinks() {
 
   if (!user) {
     return (
-      <Link href="/sign-in" className={button.primary}>
-        Sign in
-      </Link>
+      <div className="flex items-center gap-1 sm:gap-2">
+        <NavLink href="/find">
+          <Icon name="search" className="h-[18px] w-[18px]" />
+          <span className="hidden sm:inline">Find your medicine</span>
+          <span className="sm:hidden">Find</span>
+        </NavLink>
+        <Link href="/sign-in" className={button.primary}>
+          Sign in
+        </Link>
+      </div>
     );
   }
 

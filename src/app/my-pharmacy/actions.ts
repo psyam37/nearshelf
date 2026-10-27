@@ -89,3 +89,53 @@ export async function reconfirmAllStock(
   refresh();
   return { status: "reconfirmed", count };
 }
+
+export type ListingState = { status: "idle" } | { status: "error"; message: string };
+
+const listingSchema = z.object({
+  pharmacyId: z.uuid(),
+  medicineId: z.uuid(),
+  listed: z.stringbool(),
+});
+
+/** Show (or stop showing) a medicine on the public finder. */
+export async function setPublicListing(
+  _prev: ListingState,
+  formData: FormData,
+): Promise<ListingState> {
+  if (!(await getCurrentUser())) {
+    return { status: "error", message: "Your session has ended. Sign in again." };
+  }
+  const parsed = listingSchema.safeParse({
+    pharmacyId: formData.get("pharmacyId"),
+    medicineId: formData.get("medicineId"),
+    listed: formData.get("listed"),
+  });
+  if (!parsed.success) return { status: "error", message: "That wasn't valid." };
+  const { pharmacyId, medicineId, listed } = parsed.data;
+
+  // Row level security: only your pharmacy, and never controlled drugs.
+  const supabase = await createClient();
+  const { error } = listed
+    ? await supabase
+        .from("public_listings")
+        .upsert(
+          { pharmacy_id: pharmacyId, medicine_id: medicineId },
+          { onConflict: "pharmacy_id,medicine_id", ignoreDuplicates: true },
+        )
+    : await supabase
+        .from("public_listings")
+        .delete()
+        .eq("pharmacy_id", pharmacyId)
+        .eq("medicine_id", medicineId);
+
+  if (error) {
+    if (error.code === "42501") {
+      return { status: "error", message: "Controlled drugs can't be shown publicly." };
+    }
+    console.error("listing failed:", error);
+    return { status: "error", message: "Couldn't save. Try again." };
+  }
+  refresh();
+  return { status: "idle" };
+}

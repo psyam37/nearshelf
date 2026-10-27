@@ -153,6 +153,78 @@ export type Database = {
         }
         Relationships: []
       }
+      public_listing_views: {
+        Row: {
+          day: string
+          medicine_id: string
+          pharmacy_id: string
+          views: number
+        }
+        Insert: {
+          day?: string
+          medicine_id: string
+          pharmacy_id: string
+          views?: number
+        }
+        Update: {
+          day?: string
+          medicine_id?: string
+          pharmacy_id?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_listing_views_medicine_id_fkey"
+            columns: ["medicine_id"]
+            isOneToOne: false
+            referencedRelation: "medicines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_listing_views_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_listings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          medicine_id: string
+          pharmacy_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          medicine_id: string
+          pharmacy_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          medicine_id?: string
+          pharmacy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_listings_medicine_id_fkey"
+            columns: ["medicine_id"]
+            isOneToOne: false
+            referencedRelation: "medicines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_listings_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -480,6 +552,36 @@ export type Database = {
           to_phone: string
           to_postcode: string
           urgency: Database["public"]["Enums"]["request_urgency"]
+        }[]
+      }
+      public_find_stock: {
+        Args: {
+          p_lat: number
+          p_lng: number
+          p_medicine_id: string
+          p_radius_m?: number
+        }
+        Returns: {
+          address_line: string
+          confirmed_at: string
+          distance_m: number
+          lat: number
+          level: Database["public"]["Enums"]["stock_level"]
+          lng: number
+          medicine_name: string
+          pharmacy_id: string
+          pharmacy_name: string
+          phone: string
+          postcode: string
+          town: string
+        }[]
+      }
+      public_listing_stats: {
+        Args: { p_pharmacy_id: string }
+        Returns: {
+          medicine_id: string
+          medicine_name: string
+          views_30d: number
         }[]
       }
       push_targets: {

@@ -77,3 +77,15 @@ export const joinSchema = z.object({
     .pipe(z.string().regex(/^[A-Z0-9]{3,10}$/, "Enter your pharmacy's ODS code, e.g. FA123")),
 });
 export type JoinInput = z.infer<typeof joinSchema>;
+
+// The public finder (no sign-in). Same miles as broadcasts.
+export const publicFindSchema = z.object({
+  medicineId: z.uuid(),
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  radiusMiles: z.coerce
+    .number()
+    .refine((m) => (BROADCAST_RADIUS_MILES as readonly number[]).includes(m), "Pick a radius")
+    .default(5),
+});
+export type PublicFindInput = z.infer<typeof publicFindSchema>;

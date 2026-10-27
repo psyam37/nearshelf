@@ -8,6 +8,7 @@ import { requireUser, type CurrentUser } from "@/lib/auth";
 import { STOCK_LABELS, UNVERIFIED_AFTER_HOURS, formatUpdatedAgo, isVerified } from "@/lib/stock";
 import { createClient } from "@/lib/supabase/server";
 import type { StockLevel } from "@/lib/types";
+import { PublicToggle } from "./PublicToggle";
 import { ReconfirmAllButton } from "./ReconfirmAllButton";
 import { StockLevelForm } from "./StockLevelForm";
 
@@ -55,15 +56,20 @@ interface PharmacyStockProps {
 
 async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
   const supabase = await createClient();
-  const [medicines, stock] = await Promise.all([
+  const [medicines, stock, stats] = await Promise.all([
     supabase.from("medicines").select("id, name, is_controlled").order("name"),
     supabase
       .from("stock_status")
       .select("medicine_id, level, updated_at")
       .eq("pharmacy_id", pharmacy.id),
+    // What this pharmacy shows on the public finder, and how often it was seen.
+    supabase.rpc("public_listing_stats", { p_pharmacy_id: pharmacy.id }),
   ]);
   if (medicines.error) throw medicines.error;
   if (stock.error) throw stock.error;
+  if (stats.error) throw stats.error;
+  const listed = new Set(stats.data.map((row) => row.medicine_id));
+  const totalViews = stats.data.reduce((sum, row) => sum + row.views_30d, 0);
 
   // medicine id → its stock row, for quick lookups while rendering.
   const stockByMedicine = new Map(stock.data.map((row) => [row.medicine_id, row]));
@@ -133,6 +139,44 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
         </section>
       )}
 
+      <section className="mt-10">
+        <h2 className="mb-1 text-lg font-semibold">Shown to patients</h2>
+        <p className="mb-3 text-sm text-muted">
+          Medicines you switch on below appear on the public{" "}
+          <Link href="/find" className="font-medium text-accent underline">
+            Find your medicine
+          </Link>{" "}
+          page, only while you&apos;ve confirmed them in the last {UNVERIFIED_AFTER_HOURS} hours.
+          Controlled drugs are never shown.
+        </p>
+        <Card className="p-5">
+          {stats.data.length === 0 ? (
+            <p className="text-sm text-muted">
+              Nothing listed yet. Hard-to-find medicines (e.g. HRT) help patients most.
+            </p>
+          ) : (
+            <>
+              <p className="text-sm">
+                Patients saw your listings{" "}
+                <strong className="text-lg tabular-nums">{totalViews}</strong>{" "}
+                {totalViews === 1 ? "time" : "times"} in the last 30 days.
+              </p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {stats.data.map((row) => (
+                  <li
+                    key={row.medicine_id}
+                    className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium"
+                  >
+                    {row.medicine_name}{" "}
+                    <span className="text-muted tabular-nums">· {row.views_30d}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </Card>
+      </section>
+
       <h2 className="mt-10 mb-3 text-lg font-semibold">Stock levels</h2>
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         {medicines.data.map((medicine) => {
@@ -172,6 +216,14 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
                     </span>
                   )}
                 </p>
+                <div className="mt-2">
+                  <PublicToggle
+                    pharmacyId={pharmacy.id}
+                    medicineId={medicine.id}
+                    listed={listed.has(medicine.id)}
+                    controlled={medicine.is_controlled}
+                  />
+                </div>
               </div>
               <StockLevelForm
                 pharmacyId={pharmacy.id}

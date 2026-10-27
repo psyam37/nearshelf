@@ -61,11 +61,12 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/search" className={`${button.primary} px-5 py-3 text-base`}>
-                Find a medicine
+                Pharmacy staff
                 <Icon name="arrow" className="h-4 w-4" />
               </Link>
-              <Link href="/sign-in" className={`${button.secondary} px-5 py-3 text-base`}>
-                Sign in
+              <Link href="/find" className={`${button.secondary} px-5 py-3 text-base`}>
+                <Icon name="search" className="h-4 w-4" />
+                I&apos;m a patient
               </Link>
             </div>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
