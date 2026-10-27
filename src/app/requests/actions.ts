@@ -3,8 +3,10 @@
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
+import type { TablesInsert } from "@/lib/database.types";
+import { findPatientDetails } from "@/lib/patient-data";
 import { getMyPharmacy } from "@/lib/pharmacy";
-import { broadcastSchema, stockRequestSchema } from "@/lib/schemas";
+import { METRES_PER_MILE, broadcastSchema, stockRequestSchema } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
 import type { RequestStatus } from "@/lib/types";
 
@@ -40,6 +42,8 @@ export async function sendStockRequest(
   }
 
   const supabase = await createClient();
+  // Old unanswered requests (past 2 hours) shouldn't block asking again.
+  await supabase.rpc("expire_stale_requests", { p_from_pharmacy_id: fromPharmacyId });
   const { error } = await supabase.from("stock_requests").insert({
     from_pharmacy_id: fromPharmacyId,
     to_pharmacy_id: toPharmacyId,
@@ -82,21 +86,23 @@ export async function broadcastStockRequest(
 
   const parsed = broadcastSchema.safeParse({
     medicineId: formData.get("medicineId"),
-    radiusM: formData.get("radiusM"),
+    radiusMiles: formData.get("radiusMiles"),
+    urgency: formData.get("urgency") ?? undefined,
     packSize: formData.get("packSize"),
     quantity: formData.get("quantity"),
   });
   if (!parsed.success) return { status: "error", message: z.prettifyError(parsed.error) };
-  const { medicineId, radiusM, packSize, quantity } = parsed.data;
+  const { medicineId, radiusMiles, urgency, packSize, quantity } = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .rpc("broadcast_stock_request", {
       p_from_pharmacy_id: myPharmacy.id,
       p_medicine_id: medicineId,
-      p_radius_m: radiusM,
+      p_radius_m: Math.round(radiusMiles * METRES_PER_MILE),
       p_pack_size: packSize,
       p_quantity: quantity,
+      p_urgency: urgency,
     })
     .single();
 
@@ -172,5 +178,109 @@ export async function respondToRequest(
   }
 
   refresh();
+  return { status: "done" };
+}
+
+const closeSchema = z.object({
+  requestId: z.uuid(),
+  reason: z.enum(["dispensed", "cancelled"]),
+});
+
+/**
+ * Close one request: "dispensed" by the pharmacy holding the stock once it
+ * has downloaded the prescription, or "cancelled" by the pharmacy that asked.
+ */
+export async function closeRequest(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await getCurrentUser())) return { status: "error", message: "Please sign in again." };
+  const parsed = closeSchema.safeParse({
+    requestId: formData.get("requestId"),
+    reason: formData.get("reason"),
+  });
+  if (!parsed.success) return { status: "error", message: "That wasn't valid." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("close_stock_request", {
+    p_request_id: parsed.data.requestId,
+    p_reason: parsed.data.reason,
+  });
+  if (error) {
+    if (error.code !== "42501") console.error("close failed:", error);
+    return {
+      status: "error",
+      message: error.message.includes("held")
+        ? "The 30-minute hold has already ended."
+        : error.code === "42501"
+          ? error.message
+          : "Couldn't save. Try again.",
+    };
+  }
+  refresh();
+  return { status: "done" };
+}
+
+/** Close every open request of a broadcast ("we got it elsewhere"). */
+export async function closeBroadcast(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await getCurrentUser())) return { status: "error", message: "Please sign in again." };
+  const parsed = z.object({ broadcastId: z.uuid() }).safeParse({
+    broadcastId: formData.get("broadcastId"),
+  });
+  if (!parsed.success) return { status: "error", message: "That wasn't valid." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("close_broadcast", {
+    p_broadcast_id: parsed.data.broadcastId,
+  });
+  if (error) {
+    console.error("close broadcast failed:", error);
+    return { status: "error", message: "Couldn't close it. Try again." };
+  }
+  refresh();
+  return { status: "done" };
+}
+
+const messageSchema = z.object({
+  requestId: z.uuid(),
+  body: z.string().trim().min(1, "Type a message").max(500, "Keep it under 500 characters"),
+});
+
+/** Send a handover chat message. The database decides who is sending. */
+export async function sendMessage(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await getCurrentUser())) return { status: "error", message: "Please sign in again." };
+  const parsed = messageSchema.safeParse({
+    requestId: formData.get("requestId"),
+    body: formData.get("body"),
+  });
+  if (!parsed.success) return { status: "error", message: z.prettifyError(parsed.error) };
+
+  // Checked again here (anyone can call a Server Action directly), and once
+  // more by the database, which has the final say.
+  const reason = findPatientDetails(parsed.data.body);
+  if (reason) {
+    return { status: "error", message: `That looks like ${reason}. Never share patient details.` };
+  }
+
+  // sender_pharmacy_id is left out on purpose: a database trigger works out
+  // which of the two pharmacies is sending, so nobody can pose as the other.
+  // TypeScript can't see triggers, so `satisfies` checks the fields we do
+  // send, and the cast tells it the trigger fills in the rest.
+  const message = {
+    request_id: parsed.data.requestId,
+    body: parsed.data.body,
+  } satisfies Omit<TablesInsert<"request_messages">, "sender_pharmacy_id">;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("request_messages")
+    .insert(message as TablesInsert<"request_messages">);
+  if (error) {
+    if (error.code === "22023") {
+      return { status: "error", message: "That looks like patient details, so it wasn't sent." };
+    }
+    if (error.message.includes("closed")) {
+      return { status: "error", message: "The chat closed when the hold ended." };
+    }
+    console.error("message failed:", error);
+    return { status: "error", message: "Couldn't send. Try again." };
+  }
   return { status: "done" };
 }

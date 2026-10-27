@@ -153,6 +153,48 @@ export type Database = {
         }
         Relationships: []
       }
+      request_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          request_id: string
+          sender_pharmacy_id: string
+          sender_user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          request_id: string
+          sender_pharmacy_id: string
+          sender_user_id?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+          sender_pharmacy_id?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "stock_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_messages_sender_pharmacy_id_fkey"
+            columns: ["sender_pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_applications: {
         Row: {
           created_at: string
@@ -200,6 +242,8 @@ export type Database = {
       stock_requests: {
         Row: {
           broadcast_id: string | null
+          close_reason: string | null
+          closed_at: string | null
           created_at: string
           created_by: string | null
           from_pharmacy_id: string
@@ -212,9 +256,12 @@ export type Database = {
           responded_at: string | null
           status: Database["public"]["Enums"]["request_status"]
           to_pharmacy_id: string
+          urgency: Database["public"]["Enums"]["request_urgency"]
         }
         Insert: {
           broadcast_id?: string | null
+          close_reason?: string | null
+          closed_at?: string | null
           created_at?: string
           created_by?: string | null
           from_pharmacy_id: string
@@ -227,9 +274,12 @@ export type Database = {
           responded_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           to_pharmacy_id: string
+          urgency?: Database["public"]["Enums"]["request_urgency"]
         }
         Update: {
           broadcast_id?: string | null
+          close_reason?: string | null
+          closed_at?: string | null
           created_at?: string
           created_by?: string | null
           from_pharmacy_id?: string
@@ -242,6 +292,7 @@ export type Database = {
           responded_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           to_pharmacy_id?: string
+          urgency?: Database["public"]["Enums"]["request_urgency"]
         }
         Relationships: [
           {
@@ -318,10 +369,40 @@ export type Database = {
           p_pack_size?: number
           p_quantity?: number
           p_radius_m: number
+          p_urgency?: Database["public"]["Enums"]["request_urgency"]
         }
         Returns: {
           broadcast_id: string
           recipients: number
+        }[]
+      }
+      close_broadcast: { Args: { p_broadcast_id: string }; Returns: number }
+      close_stock_request: {
+        Args: { p_reason: string; p_request_id: string }
+        Returns: string
+      }
+      contains_patient_details: { Args: { p_text: string }; Returns: boolean }
+      expire_stale_requests: {
+        Args: { p_from_pharmacy_id: string }
+        Returns: number
+      }
+      incoming_requests: {
+        Args: { p_pharmacy_id: string }
+        Returns: {
+          broadcast_id: string
+          created_at: string
+          distance_m: number
+          from_name: string
+          from_postcode: string
+          id: string
+          medicine_form: string
+          medicine_name: string
+          medicine_strength: string
+          pack_size: number
+          quantity: number
+          reserved_until: string
+          state: string
+          urgency: Database["public"]["Enums"]["request_urgency"]
         }[]
       }
       is_manager_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
@@ -352,7 +433,31 @@ export type Database = {
           verified: boolean
         }[]
       }
+      outgoing_requests: {
+        Args: { p_pharmacy_id: string }
+        Returns: {
+          broadcast_id: string
+          created_at: string
+          distance_m: number
+          id: string
+          medicine_name: string
+          pack_size: number
+          quantity: number
+          reserved_until: string
+          state: string
+          to_address: string
+          to_name: string
+          to_phone: string
+          to_postcode: string
+          urgency: Database["public"]["Enums"]["request_urgency"]
+        }[]
+      }
       reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
+      request_open_window: { Args: never; Returns: string }
+      request_state: {
+        Args: { r: Database["public"]["Tables"]["stock_requests"]["Row"] }
+        Returns: string
+      }
       review_staff_application: {
         Args: { p_application_id: string; p_approve: boolean }
         Returns: Database["public"]["Enums"]["application_status"]
@@ -381,6 +486,7 @@ export type Database = {
     Enums: {
       application_status: "pending" | "approved" | "rejected"
       request_status: "pending" | "confirmed" | "declined"
+      request_urgency: "urgent" | "routine"
       stock_level: "in_stock" | "low" | "out_of_stock"
     }
     CompositeTypes: {
@@ -511,6 +617,7 @@ export const Constants = {
     Enums: {
       application_status: ["pending", "approved", "rejected"],
       request_status: ["pending", "confirmed", "declined"],
+      request_urgency: ["urgent", "routine"],
       stock_level: ["in_stock", "low", "out_of_stock"],
     },
   },

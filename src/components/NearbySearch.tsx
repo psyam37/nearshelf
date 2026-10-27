@@ -149,14 +149,9 @@ export function NearbySearch({ myPharmacy }: NearbySearchProps) {
       ) : null}
 
       {/* Signed-in staff can always ask everyone nearby, even before searching.
-          The key resets the form when the medicine or radius changes. */}
+          The key resets the form when the medicine changes. */}
       {myPharmacy && medicine && (
-        <BroadcastForm
-          key={`${medicine.id}:${radiusKm}`}
-          medicine={medicine}
-          radiusKm={radiusKm}
-          myPharmacyName={myPharmacy.name}
-        />
+        <BroadcastForm key={medicine.id} medicine={medicine} myPharmacyName={myPharmacy.name} />
       )}
     </div>
   );

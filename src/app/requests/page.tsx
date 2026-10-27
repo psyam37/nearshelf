@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
+import { HandoverChat } from "@/components/HandoverChat";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { RedirectionSteps } from "@/components/RedirectionSteps";
 import { ReserveCountdown } from "@/components/ReserveCountdown";
 import { EmptyState, Icon, ListSkeleton, PageHeader, Skeleton } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { getMyPharmacy, type MyPharmacy } from "@/lib/pharmacy";
-import { formatUpdatedAgo } from "@/lib/stock";
+import { formatMiles, formatUpdatedAgo } from "@/lib/stock";
 import { createClient } from "@/lib/supabase/server";
-import type { RequestStatus } from "@/lib/types";
+import { CloseBroadcastButton, CloseRequestButton } from "./CloseButtons";
 import { RespondButtons } from "./RespondButtons";
 
 export const metadata: Metadata = {
@@ -34,9 +35,9 @@ async function Requests() {
       <>
         <PageHeader eyebrow="Requests" title="Stock requests" />
         <EmptyState icon="store">
-          Your account isn&apos;t linked to a pharmacy yet. See{" "}
-          <Link href="/my-pharmacy" className="font-medium text-accent underline">
-            My pharmacy
+          Your account isn&apos;t linked to a pharmacy yet.{" "}
+          <Link href="/join" className="font-medium text-accent underline">
+            Join your pharmacy
           </Link>
           .
         </EmptyState>
@@ -49,110 +50,152 @@ async function Requests() {
       <PageHeader
         eyebrow={myPharmacy.name}
         title="Stock requests"
-        description="Pharmacies asking whether you have a medicine, and the answers to what you asked. Updates live."
+        description="Requests from pharmacies near you, and answers to yours. Everything updates live."
       />
       {/* Two listeners, because a Realtime filter can only check one column. */}
       <LiveRefresh table="stock_requests" filter={`to_pharmacy_id=eq.${myPharmacy.id}`} />
       <LiveRefresh table="stock_requests" filter={`from_pharmacy_id=eq.${myPharmacy.id}`} />
-      <RequestLists pharmacy={myPharmacy} />
+      <RequestFeed pharmacy={myPharmacy} />
     </>
   );
 }
 
-async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
-  const supabase = await createClient();
-  // Two links point from stock_requests to pharmacies (from and to), so each
-  // join names the foreign key it follows.
-  const columns = `id, status, message, created_at, responded_at, reserved_until,
-    pack_size, quantity, broadcast_id,
-    medicine:medicines(name),
-    from:pharmacies!stock_requests_from_pharmacy_id_fkey(name),
-    to:pharmacies!stock_requests_to_pharmacy_id_fkey(name, address_line, postcode, phone)`;
+// One row from outgoing_requests(), as generated from the database.
+type Outgoing = Awaited<ReturnType<typeof loadFeeds>>["outgoing"][number];
 
+async function loadFeeds(pharmacyId: string) {
+  const supabase = await createClient();
+  // Database functions do the joining, the distances, the lifecycle state
+  // and the sorting (open first, then urgent, then nearest).
   const [incoming, outgoing] = await Promise.all([
-    supabase
-      .from("stock_requests")
-      .select(columns)
-      .eq("to_pharmacy_id", pharmacy.id)
-      .order("created_at", { ascending: false })
-      .limit(50),
-    supabase
-      .from("stock_requests")
-      .select(columns)
-      .eq("from_pharmacy_id", pharmacy.id)
-      .order("created_at", { ascending: false })
-      .limit(100),
+    supabase.rpc("incoming_requests", { p_pharmacy_id: pharmacyId }),
+    supabase.rpc("outgoing_requests", { p_pharmacy_id: pharmacyId }),
   ]);
   if (incoming.error) throw incoming.error;
   if (outgoing.error) throw outgoing.error;
+  return { incoming: incoming.data, outgoing: outgoing.data };
+}
 
+async function RequestFeed({ pharmacy }: { pharmacy: MyPharmacy }) {
+  const { incoming, outgoing } = await loadFeeds(pharmacy.id);
   const now = new Date();
-  const pending = incoming.data.filter((r) => r.status === "pending");
-  const answered = incoming.data.filter((r) => r.status !== "pending");
 
-  // A broadcast is many rows (one per pharmacy) with the same broadcast_id;
-  // a single "Ask to confirm" is a group of one. Map keeps the newest first.
-  const groups = new Map<string, typeof outgoing.data>();
-  for (const r of outgoing.data) {
+  const open = incoming.filter((r) => r.state === "open");
+  const holding = incoming.filter((r) => r.state === "held");
+  const history = incoming.filter((r) => r.state !== "open" && r.state !== "held");
+
+  // A broadcast is many rows with the same broadcast_id; a single "Ask to
+  // confirm" is a group of one. Map keeps the newest first.
+  const groups = new Map<string, Outgoing[]>();
+  for (const r of outgoing) {
     const key = r.broadcast_id ?? r.id;
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
+      {/* ------------------------------------------------ Requests near you */}
       <section>
-        <SectionTitle count={pending.length}>Waiting for your answer</SectionTitle>
-        {pending.length === 0 ? (
-          <EmptyState icon="inbox">No one is waiting on you right now.</EmptyState>
+        <SectionTitle count={open.length}>Requests near you</SectionTitle>
+        {open.length === 0 ? (
+          <EmptyState icon="inbox">No open requests nearby right now.</EmptyState>
         ) : (
-          <ul className="space-y-3">
-            {pending.map((r) => (
-              <li
-                key={r.id}
-                className="rounded-2xl border border-brand-200 bg-surface p-5 shadow-sm ring-4 ring-brand-500/5 dark:border-brand-800"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="rounded-xl bg-brand-50 p-2 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
-                    <Icon name={r.broadcast_id ? "bolt" : "message"} className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p>
-                      <strong>{r.from.name}</strong> needs <strong>{r.medicine.name}</strong>
-                    </p>
-                    <p className="mt-1 flex flex-wrap gap-2 text-xs text-muted">
-                      {packText(r) && (
-                        <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium text-ink">
-                          {packText(r)}
+          <ul className="space-y-2">
+            {open.map((r) => (
+              <li key={r.id}>
+                {/* Tap to reveal the answer buttons, so a stray tap can't send one. */}
+                <details className="group rounded-2xl border border-line bg-surface shadow-sm open:border-brand-300 open:ring-4 open:ring-brand-500/5">
+                  <summary className="flex cursor-pointer list-none items-start gap-3 p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
+                    <div className="min-w-0 flex-1">
+                      <p className="flex flex-wrap items-center gap-2">
+                        {r.urgency === "urgent" && <UrgentBadge />}
+                        <span className="font-semibold">{r.medicine_name}</span>
+                      </p>
+                      <p className="mt-0.5 text-sm text-muted">
+                        {[
+                          [r.medicine_strength, r.medicine_form].filter(Boolean).join(" "),
+                          packText(r),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                      <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                        <span className="font-medium text-ink">{r.from_name}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Icon name="pin" className="h-3.5 w-3.5" />
+                          {formatMiles(r.distance_m)}
                         </span>
-                      )}
-                      {r.broadcast_id && (
-                        <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-800 dark:bg-brand-950 dark:text-brand-200">
-                          Sent to pharmacies nearby
-                        </span>
-                      )}
-                      <span className="py-0.5">{formatUpdatedAgo(r.created_at, now)}</span>
-                    </p>
-                    {r.message && <p className="mt-1 text-sm text-muted">“{r.message}”</p>}
-                    <div className="mt-4">
-                      <RespondButtons requestId={r.id} />
+                        <span>{formatUpdatedAgo(r.created_at, now)}</span>
+                      </p>
                     </div>
+                    <span className="mt-1 rounded-full bg-surface-2 p-1 text-muted transition-transform group-open:rotate-90">
+                      <Icon name="arrow" className="h-4 w-4" />
+                    </span>
+                  </summary>
+                  <div className="border-t border-line px-4 pt-3 pb-4 sm:px-5">
+                    <RespondButtons requestId={r.id} />
                     <p className="mt-2 text-xs text-muted">
-                      &ldquo;Available&rdquo; holds it for their patient for 30 minutes.
+                      Confirming holds it for their patient for 30 minutes and opens a chat with{" "}
+                      {r.from_name}.
                     </p>
                   </div>
-                </div>
+                </details>
               </li>
             ))}
           </ul>
         )}
       </section>
 
+      {/* ----------------------------------------------------- You're holding */}
+      {holding.length > 0 && (
+        <section>
+          <SectionTitle count={holding.length}>You&apos;re holding</SectionTitle>
+          <ul className="space-y-3">
+            {holding.map((r) => (
+              <li
+                key={r.id}
+                className="rounded-2xl border border-brand-200 bg-surface p-5 shadow-sm dark:border-brand-800"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold">
+                      {r.medicine_name}
+                      {packText(r) && (
+                        <span className="font-normal text-muted"> · {packText(r)}</span>
+                      )}
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1 text-sm text-accent">
+                      <Icon name="clock" className="h-4 w-4" />
+                      For {r.from_name}&apos;s patient ·{" "}
+                      {r.reserved_until && <ReserveCountdown until={r.reserved_until} />}
+                    </p>
+                  </div>
+                  <CloseRequestButton requestId={r.id} reason="dispensed">
+                    Prescription downloaded
+                  </CloseRequestButton>
+                </div>
+                <p className="mt-2 text-xs text-muted">
+                  Tap &ldquo;Prescription downloaded&rdquo; once you&apos;ve pulled it from the NHS
+                  Spine. If it isn&apos;t, the hold ends by itself after 30 minutes.
+                </p>
+                <HandoverChat
+                  requestId={r.id}
+                  myPharmacyId={pharmacy.id}
+                  otherPharmacyName={r.from_name}
+                  reservedUntil={r.reserved_until}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* ---------------------------------------------------- Your requests */}
       <section>
-        <SectionTitle>You asked</SectionTitle>
+        <SectionTitle>Your requests</SectionTitle>
         {groups.size === 0 ? (
           <EmptyState icon="message">
-            Use <strong className="text-ink">Ask every pharmacy nearby</strong> or{" "}
-            <strong className="text-ink">Ask to confirm</strong> on the{" "}
+            Use <strong className="text-ink">Ask every pharmacy nearby</strong> on the{" "}
             <Link href="/search" className="font-medium text-accent underline">
               search
             </Link>{" "}
@@ -160,100 +203,142 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
           </EmptyState>
         ) : (
           <ul className="space-y-3">
-            {[...groups.entries()].map(([key, rows]) => {
-              const first = rows[0];
-              const available = rows.filter((r) => r.status === "confirmed");
-              const waiting = rows.filter((r) => r.status === "pending").length;
-              return (
-                <li key={key} className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold">{first.medicine.name}</p>
-                      <p className="text-sm text-muted">
-                        {[
-                          packText(first),
-                          rows.length > 1
-                            ? `asked ${rows.length} pharmacies`
-                            : `asked ${first.to.name}`,
-                          formatUpdatedAgo(first.created_at, now),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                    {rows.length > 1 ? (
-                      <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted">
-                        {available.length} available · {waiting} waiting
-                      </span>
-                    ) : (
-                      <StatusPill status={first.status} />
-                    )}
-                  </div>
-
-                  {/* Every "Available" answer, with what to do next. */}
-                  {available.map((r) => (
-                    <div key={r.id}>
-                      {rows.length > 1 && (
-                        <p className="mt-4 flex items-center gap-2 text-sm font-semibold">
-                          <StatusPill status="confirmed" />
-                          {r.to.name}
-                        </p>
-                      )}
-                      <RedirectionSteps pharmacy={r.to} reservedUntil={r.reserved_until} />
-                    </div>
-                  ))}
-
-                  {/* For broadcasts, a compact list of everyone else. */}
-                  {rows.length > 1 && (
-                    <ul className="mt-4 flex flex-wrap gap-2">
-                      {rows
-                        .filter((r) => r.status !== "confirmed")
-                        .map((r) => (
-                          <li
-                            key={r.id}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs"
-                          >
-                            {r.to.name}
-                            <span className="text-muted">
-                              · {r.status === "pending" ? "waiting" : "not available"}
-                            </span>
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
+            {[...groups.entries()].map(([key, rows]) => (
+              <OutgoingGroup key={key} rows={rows} pharmacyId={pharmacy.id} now={now} />
+            ))}
           </ul>
         )}
       </section>
 
-      {answered.length > 0 && (
+      {/* ---------------------------------------------------------- History */}
+      {history.length > 0 && (
         <section>
-          <SectionTitle>You answered</SectionTitle>
+          <SectionTitle>Answered</SectionTitle>
           <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
-            {answered.map((r) => (
+            {history.map((r) => (
               <li
                 key={r.id}
                 className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm sm:px-5"
               >
                 <span className="min-w-0">
-                  <span className="font-semibold">{r.medicine.name}</span>{" "}
-                  <span className="text-muted">for {r.from.name}</span>
-                  {r.status === "confirmed" && r.reserved_until && (
-                    <span className="mt-0.5 flex items-center gap-1 text-xs font-medium text-accent">
-                      <Icon name="clock" className="h-3.5 w-3.5" />
-                      Keep it for their patient · <ReserveCountdown until={r.reserved_until} />
-                    </span>
-                  )}
+                  <span className="font-semibold">{r.medicine_name}</span>{" "}
+                  <span className="text-muted">
+                    for {r.from_name} · {formatUpdatedAgo(r.created_at, now)}
+                  </span>
                 </span>
-                <StatusPill status={r.status} />
+                <StatePill state={r.state} />
               </li>
             ))}
           </ul>
         </section>
       )}
     </div>
+  );
+}
+
+function OutgoingGroup({
+  rows,
+  pharmacyId,
+  now,
+}: {
+  rows: Outgoing[];
+  pharmacyId: string;
+  now: Date;
+}) {
+  const first = rows[0];
+  const held = rows.filter((r) => r.state === "held");
+  const count = (state: string) => rows.filter((r) => r.state === state).length;
+  const stillOpen = rows.some((r) => r.state === "open" || r.state === "held");
+  const isBroadcast = rows.length > 1 || first.broadcast_id !== null;
+
+  return (
+    <li className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="flex flex-wrap items-center gap-2 font-semibold">
+            {first.urgency === "urgent" && <UrgentBadge />}
+            {first.medicine_name}
+          </p>
+          <p className="mt-0.5 text-sm text-muted">
+            {[
+              packText(first),
+              isBroadcast
+                ? `asked ${rows.length} ${rows.length === 1 ? "pharmacy" : "pharmacies"}`
+                : `asked ${first.to_name}`,
+              formatUpdatedAgo(first.created_at, now),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </div>
+        {isBroadcast ? (
+          <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted">
+            {count("held") + count("dispensed")} have it · {count("open")} waiting
+          </span>
+        ) : (
+          <StatePill state={first.state} />
+        )}
+      </div>
+
+      {/* Every pharmacy holding it: what to do next, and the chat. */}
+      {held.map((r) => (
+        <div key={r.id} className="mt-4">
+          {isBroadcast && (
+            <p className="flex items-center gap-2 text-sm font-semibold">
+              <StatePill state="held" />
+              {r.to_name} · {formatMiles(r.distance_m)}
+            </p>
+          )}
+          <RedirectionSteps
+            pharmacy={{
+              name: r.to_name,
+              address_line: r.to_address,
+              postcode: r.to_postcode,
+              phone: r.to_phone,
+            }}
+            reservedUntil={r.reserved_until}
+          />
+          <HandoverChat
+            requestId={r.id}
+            myPharmacyId={pharmacyId}
+            otherPharmacyName={r.to_name}
+            reservedUntil={r.reserved_until}
+          />
+        </div>
+      ))}
+
+      {/* Everyone else, compactly. */}
+      {isBroadcast && rows.length > held.length && (
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {rows
+            .filter((r) => r.state !== "held")
+            .map((r) => (
+              <li
+                key={r.id}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs"
+              >
+                {r.to_name}
+                <span className="text-muted">· {STATE_LABELS[r.state] ?? r.state}</span>
+              </li>
+            ))}
+        </ul>
+      )}
+
+      {stillOpen && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+          <p className="text-xs text-muted">
+            Sorted it another way? Close it so nobody holds stock for nothing.
+          </p>
+          {first.broadcast_id ? (
+            <CloseBroadcastButton broadcastId={first.broadcast_id} />
+          ) : (
+            <CloseRequestButton requestId={first.id} reason="cancelled">
+              Close request
+            </CloseRequestButton>
+          )}
+        </div>
+      )}
+    </li>
   );
 }
 
@@ -264,7 +349,16 @@ function packText(r: { pack_size: number | null; quantity: number | null }): str
   return `${packs} ${packs === 1 ? "pack" : "packs"}${r.pack_size ? ` of ${r.pack_size}` : ""}`;
 }
 
-function SectionTitle({ children, count }: { children: string; count?: number }) {
+function UrgentBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-700 ring-1 ring-rose-600/20 ring-inset dark:bg-rose-950 dark:text-rose-300">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" aria-hidden />
+      Patient waiting
+    </span>
+  );
+}
+
+function SectionTitle({ children, count }: { children: ReactNode; count?: number }) {
   return (
     <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
       {children}
@@ -277,24 +371,32 @@ function SectionTitle({ children, count }: { children: string; count?: number })
   );
 }
 
-const STATUS_STYLES: Record<RequestStatus, string> = {
-  pending: "bg-surface-2 text-muted ring-line",
-  confirmed:
-    "bg-emerald-50 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-950 dark:text-emerald-300",
-  declined: "bg-rose-50 text-rose-800 ring-rose-600/20 dark:bg-rose-950 dark:text-rose-300",
-};
-const STATUS_LABELS: Record<RequestStatus, string> = {
-  pending: "Waiting",
-  confirmed: "Available",
-  declined: "Not available",
+const STATE_LABELS: Record<string, string> = {
+  open: "waiting",
+  held: "holding it",
+  dispensed: "dispensed",
+  declined: "not available",
+  cancelled: "closed",
+  expired: "expired",
 };
 
-function StatusPill({ status }: { status: RequestStatus }) {
+const STATE_STYLES: Record<string, string> = {
+  open: "bg-surface-2 text-muted ring-line",
+  held: "bg-emerald-50 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-950 dark:text-emerald-300",
+  dispensed: "bg-brand-50 text-brand-800 ring-brand-600/20 dark:bg-brand-950 dark:text-brand-200",
+  declined: "bg-rose-50 text-rose-800 ring-rose-600/20 dark:bg-rose-950 dark:text-rose-300",
+  cancelled: "bg-surface-2 text-muted ring-line",
+  expired: "bg-surface-2 text-muted ring-line",
+};
+
+function StatePill({ state }: { state: string }) {
   return (
     <span
-      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLES[status]}`}
+      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ring-inset ${
+        STATE_STYLES[state] ?? STATE_STYLES.open
+      }`}
     >
-      {STATUS_LABELS[status]}
+      {STATE_LABELS[state] ?? state}
     </span>
   );
 }

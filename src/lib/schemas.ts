@@ -44,9 +44,16 @@ export type SignInInput = z.infer<typeof signInSchema>;
 
 // "Who nearby has this?" sent to every pharmacy within the radius. Only
 // inventory details: never anything about the patient (GDPR special category).
+export const BROADCAST_RADIUS_MILES = [2, 5, 10] as const;
+export const METRES_PER_MILE = 1609.344;
+
 export const broadcastSchema = z.object({
   medicineId: z.uuid(),
-  radiusM: z.coerce.number().int().min(500).max(50_000),
+  // One of the offered radii, in miles (UK pharmacies think in miles).
+  radiusMiles: z.coerce
+    .number()
+    .refine((m) => (BROADCAST_RADIUS_MILES as readonly number[]).includes(m), "Pick a radius"),
+  urgency: z.enum(["urgent", "routine"]).default("routine"),
   // Units per pack, e.g. 28 tablets. Empty means "any pack size".
   packSize: z.preprocess(
     (v) => (v === "" || v === null ? undefined : v),

@@ -20,7 +20,7 @@ export function RespondButtons({ requestId }: { requestId: string }) {
         className={button.primary}
       >
         <Icon name="check" className="h-4 w-4" />
-        Available
+        Confirm we have it
       </button>
       <button
         type="submit"

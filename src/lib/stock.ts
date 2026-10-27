@@ -34,3 +34,9 @@ export function isVerified(isoTimestamp: string, now: Date = new Date()): boolea
 export function formatDistance(metres: number): string {
   return metres < 1000 ? `${Math.round(metres)} m` : `${(metres / 1000).toFixed(1)} km`;
 }
+
+/** Distances in miles, as UK pharmacies talk about them: "0.4 mi", "3 mi". */
+export function formatMiles(metres: number): string {
+  const miles = metres / 1609.344;
+  return miles < 10 ? `${miles.toFixed(1)} mi` : `${Math.round(miles)} mi`;
+}
