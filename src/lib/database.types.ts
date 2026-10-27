@@ -153,6 +153,36 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       request_messages: {
         Row: {
           body: string
@@ -452,6 +482,14 @@ export type Database = {
           urgency: Database["public"]["Enums"]["request_urgency"]
         }[]
       }
+      push_targets: {
+        Args: { p_exclude_user: string; p_pharmacy_ids: string[] }
+        Returns: {
+          auth: string
+          endpoint: string
+          p256dh: string
+        }[]
+      }
       reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
       request_open_window: { Args: never; Returns: string }
       request_state: {
@@ -461,6 +499,15 @@ export type Database = {
       review_staff_application: {
         Args: { p_application_id: string; p_approve: boolean }
         Returns: Database["public"]["Enums"]["application_status"]
+      }
+      save_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
       search_medicines: {
         Args: { p_limit?: number; p_query: string }

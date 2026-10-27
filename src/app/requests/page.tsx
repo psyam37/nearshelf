@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { HandoverChat } from "@/components/HandoverChat";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { NotificationToggle } from "@/components/NotificationToggle";
 import { RedirectionSteps } from "@/components/RedirectionSteps";
 import { ReserveCountdown } from "@/components/ReserveCountdown";
 import { EmptyState, Icon, ListSkeleton, PageHeader, Skeleton } from "@/components/ui";
@@ -51,6 +52,7 @@ async function Requests() {
         eyebrow={myPharmacy.name}
         title="Stock requests"
         description="Requests from pharmacies near you, and answers to yours. Everything updates live."
+        actions={<NotificationToggle />}
       />
       {/* Two listeners, because a Realtime filter can only check one column. */}
       <LiveRefresh table="stock_requests" filter={`to_pharmacy_id=eq.${myPharmacy.id}`} />

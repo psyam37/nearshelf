@@ -1,11 +1,13 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import type { TablesInsert } from "@/lib/database.types";
 import { findPatientDetails } from "@/lib/patient-data";
 import { getMyPharmacy } from "@/lib/pharmacy";
+import { notifyConfirmed, notifyNewRequest } from "@/lib/request-notifications";
 import { METRES_PER_MILE, broadcastSchema, stockRequestSchema } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
 import type { RequestStatus } from "@/lib/types";
@@ -20,7 +22,8 @@ export async function sendStockRequest(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await getCurrentUser())) return { status: "error", message: "Please sign in again." };
+  const user = await getCurrentUser();
+  if (!user) return { status: "error", message: "Please sign in again." };
 
   // The sender is always the user's own pharmacy, worked out on the server.
   // We never take "from" from the browser, where it could be changed.
@@ -44,12 +47,16 @@ export async function sendStockRequest(
   const supabase = await createClient();
   // Old unanswered requests (past 2 hours) shouldn't block asking again.
   await supabase.rpc("expire_stale_requests", { p_from_pharmacy_id: fromPharmacyId });
-  const { error } = await supabase.from("stock_requests").insert({
-    from_pharmacy_id: fromPharmacyId,
-    to_pharmacy_id: toPharmacyId,
-    medicine_id: medicineId,
-    message: message ?? null,
-  });
+  const { data: created, error } = await supabase
+    .from("stock_requests")
+    .insert({
+      from_pharmacy_id: fromPharmacyId,
+      to_pharmacy_id: toPharmacyId,
+      medicine_id: medicineId,
+      message: message ?? null,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     // 23505 = unique index: there's already an open request like this one.
@@ -60,6 +67,8 @@ export async function sendStockRequest(
     console.error("stock request failed:", error);
     return { status: "error", message: "Couldn't send. Try again." };
   }
+  // Tell them, after the response has gone back, so the button stays fast.
+  after(() => notifyNewRequest({ requestId: created.id }, user.id));
   return { status: "done" };
 }
 
@@ -78,7 +87,8 @@ export async function broadcastStockRequest(
   _prev: BroadcastState,
   formData: FormData,
 ): Promise<BroadcastState> {
-  if (!(await getCurrentUser())) return { status: "error", message: "Please sign in again." };
+  const user = await getCurrentUser();
+  if (!user) return { status: "error", message: "Please sign in again." };
   const myPharmacy = await getMyPharmacy();
   if (!myPharmacy) {
     return { status: "error", message: "Link your account to a pharmacy first." };
@@ -118,6 +128,8 @@ export async function broadcastStockRequest(
         "No other pharmacies in range, or you've already asked them all. Try a bigger radius.",
     };
   }
+  // Alert everyone in range, after the response has gone back.
+  after(() => notifyNewRequest({ broadcastId: data.broadcast_id }, user.id));
   return { status: "broadcast", recipients: data.recipients };
 }
 
@@ -126,7 +138,8 @@ export async function respondToRequest(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await getCurrentUser())) return { status: "error", message: "Please sign in again." };
+  const user = await getCurrentUser();
+  if (!user) return { status: "error", message: "Please sign in again." };
 
   const parsed = respondSchema.safeParse({
     requestId: formData.get("requestId"),
@@ -176,6 +189,9 @@ export async function respondToRequest(
       console.error("Failed to mark the medicine as in stock:", stockError);
     }
   }
+
+  // Tell the pharmacy that asked, as soon as the answer is saved.
+  if (status === "confirmed") after(() => notifyConfirmed(requestId, user.id));
 
   refresh();
   return { status: "done" };
