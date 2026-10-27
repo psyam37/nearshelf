@@ -18,12 +18,17 @@ export function formatUpdatedAgo(isoTimestamp: string, now: Date = new Date()): 
   return days === 1 ? "1 day ago" : `${days} days ago`;
 }
 
-/** Stock info older than this should be shown as possibly out of date. */
-export const STALE_AFTER_HOURS = 24;
+/**
+ * Stock is "verified" for this long after a pharmacy last confirmed it, then
+ * shown as "Unverified": pharmacy stock changes by the minute, and a wrong
+ * "in stock" sends a patient on a wasted trip. Keep in step with
+ * stock_verified_window() in the database.
+ */
+export const UNVERIFIED_AFTER_HOURS = 2;
 
-export function isStale(isoTimestamp: string, now: Date = new Date()): boolean {
+export function isVerified(isoTimestamp: string, now: Date = new Date()): boolean {
   const ageHours = (now.getTime() - new Date(isoTimestamp).getTime()) / 3_600_000;
-  return ageHours > STALE_AFTER_HOURS;
+  return ageHours <= UNVERIFIED_AFTER_HOURS;
 }
 
 export function formatDistance(metres: number): string {

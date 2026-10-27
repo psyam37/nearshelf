@@ -140,34 +140,46 @@ export type Database = {
       }
       stock_requests: {
         Row: {
+          broadcast_id: string | null
           created_at: string
           created_by: string | null
           from_pharmacy_id: string
           id: string
           medicine_id: string
           message: string | null
+          pack_size: number | null
+          quantity: number | null
+          reserved_until: string | null
           responded_at: string | null
           status: Database["public"]["Enums"]["request_status"]
           to_pharmacy_id: string
         }
         Insert: {
+          broadcast_id?: string | null
           created_at?: string
           created_by?: string | null
           from_pharmacy_id: string
           id?: string
           medicine_id: string
           message?: string | null
+          pack_size?: number | null
+          quantity?: number | null
+          reserved_until?: string | null
           responded_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           to_pharmacy_id: string
         }
         Update: {
+          broadcast_id?: string | null
           created_at?: string
           created_by?: string | null
           from_pharmacy_id?: string
           id?: string
           medicine_id?: string
           message?: string | null
+          pack_size?: number | null
+          quantity?: number | null
+          reserved_until?: string | null
           responded_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           to_pharmacy_id?: string
@@ -240,6 +252,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      broadcast_stock_request: {
+        Args: {
+          p_from_pharmacy_id: string
+          p_medicine_id: string
+          p_pack_size?: number
+          p_quantity?: number
+          p_radius_m: number
+        }
+        Returns: {
+          broadcast_id: string
+          recipients: number
+        }[]
+      }
       is_staff_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
       nearby_stock: {
         Args: {
@@ -263,8 +288,10 @@ export type Database = {
           postcode: string
           town: string
           updated_at: string
+          verified: boolean
         }[]
       }
+      reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
       search_medicines: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -284,6 +311,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      stock_verified_window: { Args: never; Returns: string }
     }
     Enums: {
       request_status: "pending" | "confirmed" | "declined"

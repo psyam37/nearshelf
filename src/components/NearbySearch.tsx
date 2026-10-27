@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { NearbyStockResponse } from "@/app/api/nearby/route";
+import { BroadcastForm } from "@/components/BroadcastForm";
 import { LocationPicker } from "@/components/LocationPicker";
 import { MedicineSearch } from "@/components/MedicineSearch";
 import { NearbyResults } from "@/components/NearbyResults";
@@ -146,6 +147,17 @@ export function NearbySearch({ myPharmacy }: NearbySearchProps) {
           />
         </section>
       ) : null}
+
+      {/* Signed-in staff can always ask everyone nearby, even before searching.
+          The key resets the form when the medicine or radius changes. */}
+      {myPharmacy && medicine && (
+        <BroadcastForm
+          key={`${medicine.id}:${radiusKm}`}
+          medicine={medicine}
+          radiusKm={radiusKm}
+          myPharmacyName={myPharmacy.name}
+        />
+      )}
     </div>
   );
 }

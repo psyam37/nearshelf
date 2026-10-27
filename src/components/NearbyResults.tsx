@@ -1,7 +1,7 @@
 import { AskToConfirmButton } from "@/components/AskToConfirmButton";
 import { StockBadge } from "@/components/StockBadge";
 import { Icon } from "@/components/ui";
-import { formatDistance, formatUpdatedAgo, isStale } from "@/lib/stock";
+import { STOCK_LABELS, formatDistance, formatUpdatedAgo } from "@/lib/stock";
 import type { NearbyStockResult } from "@/lib/types";
 
 interface NearbyResultsProps {
@@ -18,7 +18,8 @@ export function NearbyResults({ results, medicineId, myPharmacy }: NearbyResults
   return (
     <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
       {results.map((row) => {
-        const stale = isStale(row.updated_at, now);
+        // Worked out by the database: confirmed within the last 2 hours.
+        const unverified = !row.verified && row.level !== "out_of_stock";
         const isMine = row.pharmacy_id === myPharmacy?.id;
         return (
           // A pharmacy can appear twice when equivalents are included
@@ -41,7 +42,7 @@ export function NearbyResults({ results, medicineId, myPharmacy }: NearbyResults
                   {row.address_line}, {row.postcode}
                 </p>
               </div>
-              <StockBadge level={row.level} />
+              <StockBadge level={row.level} verified={row.verified} />
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -51,14 +52,15 @@ export function NearbyResults({ results, medicineId, myPharmacy }: NearbyResults
               </span>
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium ${
-                  stale
+                  unverified
                     ? "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                     : "bg-surface-2 text-muted"
                 }`}
               >
                 <Icon name="clock" className="h-3.5 w-3.5" />
-                {stale ? "May be out of date · " : ""}updated{" "}
+                {unverified ? `Said “${STOCK_LABELS[row.level]}” ` : "Confirmed "}
                 {formatUpdatedAgo(row.updated_at, now)}
+                {unverified ? " · call to check" : ""}
               </span>
               {row.medicine_id !== medicineId && (
                 <span className="rounded-full bg-surface-2 px-2 py-1 font-medium text-ink">

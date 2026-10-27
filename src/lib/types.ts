@@ -52,6 +52,8 @@ export interface NearbyStockResult {
   medicine_name: string;
   level: StockLevel;
   updated_at: string;
+  /** Confirmed within the last 2 hours (worked out by the database). */
+  verified: boolean;
 }
 
 export interface StockRequest {

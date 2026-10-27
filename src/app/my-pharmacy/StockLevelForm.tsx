@@ -16,6 +16,8 @@ interface StockLevelFormProps {
   medicineId: string;
   medicineName: string;
   current: StockLevel | null; // null = never recorded
+  /** Not confirmed in the last 2 hours: offer a one-tap "still the same". */
+  unverified?: boolean;
 }
 
 export function StockLevelForm({
@@ -23,6 +25,7 @@ export function StockLevelForm({
   medicineId,
   medicineName,
   current,
+  unverified = false,
 }: StockLevelFormProps) {
   const [state, formAction, pending] = useActionState<StockUpdateState, FormData>(
     updateStockLevel,
@@ -33,11 +36,23 @@ export function StockLevelForm({
     <form action={formAction}>
       <input type="hidden" name="pharmacyId" value={pharmacyId} />
       <input type="hidden" name="medicineId" value={medicineId} />
+      {/* Re-sending the current level re-confirms it and resets its 2 hours. */}
+      {unverified && current && current !== "out_of_stock" && (
+        <button
+          type="submit"
+          name="level"
+          value={current}
+          disabled={pending}
+          className="mb-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60 sm:w-auto dark:bg-brand-600 dark:hover:bg-brand-500"
+        >
+          ✓ Still {STOCK_LABELS[current].toLowerCase()}
+        </button>
+      )}
       {/* Three submit buttons: the one clicked sends its name/value pair. */}
       <div
         role="group"
         aria-label={`Stock level for ${medicineName}`}
-        className="inline-flex gap-1 rounded-xl border border-line bg-surface-2 p-1"
+        className="flex w-fit gap-1 rounded-xl border border-line bg-surface-2 p-1"
       >
         {STOCK_LEVELS.map((level) => (
           <button

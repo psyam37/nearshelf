@@ -20,7 +20,7 @@ export function RespondButtons({ requestId }: { requestId: string }) {
         className={button.primary}
       >
         <Icon name="check" className="h-4 w-4" />
-        Yes, we have it
+        Available
       </button>
       <button
         type="submit"
@@ -29,7 +29,7 @@ export function RespondButtons({ requestId }: { requestId: string }) {
         disabled={pending}
         className={button.secondary}
       >
-        No, we don&apos;t
+        Not available
       </button>
       {state.status === "error" && <span className="text-xs text-rose-600">{state.message}</span>}
     </form>

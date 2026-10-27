@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { stockUpdateSchema } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
@@ -9,6 +10,7 @@ import type { StockLevel } from "@/lib/types";
 export type StockUpdateState =
   | { status: "idle" }
   | { status: "saved"; level: StockLevel }
+  | { status: "reconfirmed"; count: number }
   | { status: "error"; message: string };
 
 const NOT_YOUR_PHARMACY = "You can only update stock for a pharmacy you work at.";
@@ -54,4 +56,36 @@ export async function updateStockLevel(
 
   refresh(); // re-render the page so "updated just now" shows
   return { status: "saved", level };
+}
+
+const reconfirmSchema = z.object({ pharmacyId: z.uuid() });
+
+/**
+ * "Still in stock": re-confirms every in-stock and low row for a pharmacy,
+ * resetting their 2-hour verification. Out-of-stock rows are left alone.
+ */
+export async function reconfirmAllStock(
+  _prev: StockUpdateState,
+  formData: FormData,
+): Promise<StockUpdateState> {
+  if (!(await getCurrentUser())) {
+    return { status: "error", message: "Your session has ended. Sign in again." };
+  }
+  const parsed = reconfirmSchema.safeParse({ pharmacyId: formData.get("pharmacyId") });
+  if (!parsed.success) return { status: "error", message: "That update wasn't valid." };
+
+  // Row level security limits this to the user's own pharmacy.
+  const supabase = await createClient();
+  const { data: count, error } = await supabase.rpc("reconfirm_stock", {
+    p_pharmacy_id: parsed.data.pharmacyId,
+  });
+  if (error) {
+    console.error("reconfirm failed:", error);
+    return { status: "error", message: "Couldn't save. Try again." };
+  }
+  // 0 = nothing in stock to confirm (or, via row level security, not yours).
+  if (!count) return { status: "error", message: "Nothing was updated." };
+
+  refresh();
+  return { status: "reconfirmed", count };
 }

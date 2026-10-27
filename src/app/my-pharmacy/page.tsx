@@ -3,9 +3,10 @@ import { Suspense } from "react";
 import { StockBadge } from "@/components/StockBadge";
 import { Card, ListSkeleton, PageHeader, Skeleton } from "@/components/ui";
 import { requireUser, type CurrentUser } from "@/lib/auth";
-import { formatUpdatedAgo, isStale } from "@/lib/stock";
+import { STOCK_LABELS, UNVERIFIED_AFTER_HOURS, formatUpdatedAgo, isVerified } from "@/lib/stock";
 import { createClient } from "@/lib/supabase/server";
 import type { StockLevel } from "@/lib/types";
+import { ReconfirmAllButton } from "./ReconfirmAllButton";
 import { StockLevelForm } from "./StockLevelForm";
 
 export const metadata: Metadata = {
@@ -66,16 +67,22 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
   const stockByMedicine = new Map(stock.data.map((row) => [row.medicine_id, row]));
   const now = new Date();
 
-  // Counts for the summary tiles.
-  const countOf = (level: StockLevel) => stock.data.filter((r) => r.level === level).length;
-  const needsUpdate =
-    medicines.data.length - stock.data.filter((r) => !isStale(r.updated_at, now)).length;
+  // Counts for the summary tiles. "Available" = in stock or low: the reports
+  // that lapse to Unverified after 2 hours.
+  const available = stock.data.filter((r) => r.level !== "out_of_stock");
+  const unverifiedCount = available.filter((r) => !isVerified(r.updated_at, now)).length;
+  const verifiedCount = (level: StockLevel) =>
+    stock.data.filter((r) => r.level === level && isVerified(r.updated_at, now)).length;
 
   const tiles = [
-    { label: "In stock", value: countOf("in_stock"), dot: "bg-emerald-500" },
-    { label: "Low", value: countOf("low"), dot: "bg-amber-500" },
-    { label: "Out", value: countOf("out_of_stock"), dot: "bg-rose-500" },
-    { label: "Need an update", value: needsUpdate, dot: "bg-silver-400" },
+    { label: "In stock", value: verifiedCount("in_stock"), dot: "bg-emerald-500" },
+    { label: "Low", value: verifiedCount("low"), dot: "bg-amber-500" },
+    {
+      label: "Out",
+      value: stock.data.filter((r) => r.level === "out_of_stock").length,
+      dot: "bg-rose-500",
+    },
+    { label: "Unverified", value: unverifiedCount, dot: "bg-silver-400" },
   ];
 
   return (
@@ -84,7 +91,21 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
         eyebrow={`My pharmacy · ${role}`}
         title={pharmacy.name}
         description={`${pharmacy.address_line}, ${pharmacy.postcode}`}
+        actions={
+          unverifiedCount > 0 ? (
+            <ReconfirmAllButton pharmacyId={pharmacy.id} count={available.length} />
+          ) : undefined
+        }
       />
+
+      {unverifiedCount > 0 && (
+        <p className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          <strong>{unverifiedCount}</strong>{" "}
+          {unverifiedCount === 1 ? "medicine shows" : "medicines show"} as{" "}
+          <strong>Unverified</strong> to other pharmacies: not confirmed in the last{" "}
+          {UNVERIFIED_AFTER_HOURS} hours. Check the shelf, then confirm.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {tiles.map((tile) => (
@@ -102,7 +123,9 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         {medicines.data.map((medicine) => {
           const row = stockByMedicine.get(medicine.id);
-          const stale = row ? isStale(row.updated_at, now) : false;
+          const unverified = row
+            ? row.level !== "out_of_stock" && !isVerified(row.updated_at, now)
+            : false;
           return (
             <li
               key={medicine.id}
@@ -113,12 +136,15 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
                 <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
                   {row ? (
                     <>
-                      <StockBadge level={row.level} />
+                      <StockBadge level={row.level} verified={!unverified} />
                       <span
-                        className={stale ? "font-medium text-amber-700 dark:text-amber-400" : ""}
+                        className={
+                          unverified ? "font-medium text-amber-700 dark:text-amber-400" : ""
+                        }
                       >
-                        {stale ? "Needs an update · " : ""}updated{" "}
-                        {formatUpdatedAgo(row.updated_at, now)}
+                        {unverified
+                          ? `Said “${STOCK_LABELS[row.level]}” ${formatUpdatedAgo(row.updated_at, now)}`
+                          : `Confirmed ${formatUpdatedAgo(row.updated_at, now)}`}
                       </span>
                     </>
                   ) : (
@@ -138,6 +164,7 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
                 medicineId={medicine.id}
                 medicineName={medicine.name}
                 current={row?.level ?? null}
+                unverified={unverified}
               />
             </li>
           );

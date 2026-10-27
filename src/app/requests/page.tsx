@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { RedirectionSteps } from "@/components/RedirectionSteps";
+import { ReserveCountdown } from "@/components/ReserveCountdown";
 import { EmptyState, Icon, ListSkeleton, PageHeader, Skeleton } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { getMyPharmacy, type MyPharmacy } from "@/lib/pharmacy";
@@ -61,10 +63,11 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
   const supabase = await createClient();
   // Two links point from stock_requests to pharmacies (from and to), so each
   // join names the foreign key it follows.
-  const columns = `id, status, message, created_at, responded_at,
+  const columns = `id, status, message, created_at, responded_at, reserved_until,
+    pack_size, quantity, broadcast_id,
     medicine:medicines(name),
     from:pharmacies!stock_requests_from_pharmacy_id_fkey(name),
-    to:pharmacies!stock_requests_to_pharmacy_id_fkey(name)`;
+    to:pharmacies!stock_requests_to_pharmacy_id_fkey(name, address_line, postcode, phone)`;
 
   const [incoming, outgoing] = await Promise.all([
     supabase
@@ -78,7 +81,7 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
       .select(columns)
       .eq("from_pharmacy_id", pharmacy.id)
       .order("created_at", { ascending: false })
-      .limit(50),
+      .limit(100),
   ]);
   if (incoming.error) throw incoming.error;
   if (outgoing.error) throw outgoing.error;
@@ -86,6 +89,14 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
   const now = new Date();
   const pending = incoming.data.filter((r) => r.status === "pending");
   const answered = incoming.data.filter((r) => r.status !== "pending");
+
+  // A broadcast is many rows (one per pharmacy) with the same broadcast_id;
+  // a single "Ask to confirm" is a group of one. Map keeps the newest first.
+  const groups = new Map<string, typeof outgoing.data>();
+  for (const r of outgoing.data) {
+    const key = r.broadcast_id ?? r.id;
+    groups.set(key, [...(groups.get(key) ?? []), r]);
+  }
 
   return (
     <div className="space-y-10">
@@ -102,18 +113,32 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
               >
                 <div className="flex items-start gap-3">
                   <span className="rounded-xl bg-brand-50 p-2 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
-                    <Icon name="message" className="h-5 w-5" />
+                    <Icon name={r.broadcast_id ? "bolt" : "message"} className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p>
-                      <strong>{r.from.name}</strong> asks if you have{" "}
-                      <strong>{r.medicine.name}</strong>
+                      <strong>{r.from.name}</strong> needs <strong>{r.medicine.name}</strong>
+                    </p>
+                    <p className="mt-1 flex flex-wrap gap-2 text-xs text-muted">
+                      {packText(r) && (
+                        <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium text-ink">
+                          {packText(r)}
+                        </span>
+                      )}
+                      {r.broadcast_id && (
+                        <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-800 dark:bg-brand-950 dark:text-brand-200">
+                          Sent to pharmacies nearby
+                        </span>
+                      )}
+                      <span className="py-0.5">{formatUpdatedAgo(r.created_at, now)}</span>
                     </p>
                     {r.message && <p className="mt-1 text-sm text-muted">“{r.message}”</p>}
-                    <p className="mt-1 text-xs text-muted">{formatUpdatedAgo(r.created_at, now)}</p>
                     <div className="mt-4">
                       <RespondButtons requestId={r.id} />
                     </div>
+                    <p className="mt-2 text-xs text-muted">
+                      &ldquo;Available&rdquo; holds it for their patient for 30 minutes.
+                    </p>
                   </div>
                 </div>
               </li>
@@ -124,28 +149,81 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
 
       <section>
         <SectionTitle>You asked</SectionTitle>
-        {outgoing.data.length === 0 ? (
+        {groups.size === 0 ? (
           <EmptyState icon="message">
-            Use <strong className="text-ink">Ask to confirm</strong> on a{" "}
+            Use <strong className="text-ink">Ask every pharmacy nearby</strong> or{" "}
+            <strong className="text-ink">Ask to confirm</strong> on the{" "}
             <Link href="/search" className="font-medium text-accent underline">
               search
             </Link>{" "}
-            result, and the answer shows up here.
+            page, and the answers show up here.
           </EmptyState>
         ) : (
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
-            {outgoing.data.map((r) => (
-              <li key={r.id} className="flex items-center justify-between gap-3 p-4 sm:px-5">
-                <div className="min-w-0">
-                  <p className="font-semibold">{r.medicine.name}</p>
-                  <p className="text-sm text-muted">
-                    at {r.to.name} · asked {formatUpdatedAgo(r.created_at, now)}
-                    {r.responded_at && ` · answered ${formatUpdatedAgo(r.responded_at, now)}`}
-                  </p>
-                </div>
-                <StatusPill status={r.status} />
-              </li>
-            ))}
+          <ul className="space-y-3">
+            {[...groups.entries()].map(([key, rows]) => {
+              const first = rows[0];
+              const available = rows.filter((r) => r.status === "confirmed");
+              const waiting = rows.filter((r) => r.status === "pending").length;
+              return (
+                <li key={key} className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold">{first.medicine.name}</p>
+                      <p className="text-sm text-muted">
+                        {[
+                          packText(first),
+                          rows.length > 1
+                            ? `asked ${rows.length} pharmacies`
+                            : `asked ${first.to.name}`,
+                          formatUpdatedAgo(first.created_at, now),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    </div>
+                    {rows.length > 1 ? (
+                      <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted">
+                        {available.length} available · {waiting} waiting
+                      </span>
+                    ) : (
+                      <StatusPill status={first.status} />
+                    )}
+                  </div>
+
+                  {/* Every "Available" answer, with what to do next. */}
+                  {available.map((r) => (
+                    <div key={r.id}>
+                      {rows.length > 1 && (
+                        <p className="mt-4 flex items-center gap-2 text-sm font-semibold">
+                          <StatusPill status="confirmed" />
+                          {r.to.name}
+                        </p>
+                      )}
+                      <RedirectionSteps pharmacy={r.to} reservedUntil={r.reserved_until} />
+                    </div>
+                  ))}
+
+                  {/* For broadcasts, a compact list of everyone else. */}
+                  {rows.length > 1 && (
+                    <ul className="mt-4 flex flex-wrap gap-2">
+                      {rows
+                        .filter((r) => r.status !== "confirmed")
+                        .map((r) => (
+                          <li
+                            key={r.id}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs"
+                          >
+                            {r.to.name}
+                            <span className="text-muted">
+                              · {r.status === "pending" ? "waiting" : "not available"}
+                            </span>
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -157,11 +235,17 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
             {answered.map((r) => (
               <li
                 key={r.id}
-                className="flex items-center justify-between gap-3 p-4 text-sm sm:px-5"
+                className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm sm:px-5"
               >
                 <span className="min-w-0">
                   <span className="font-semibold">{r.medicine.name}</span>{" "}
                   <span className="text-muted">for {r.from.name}</span>
+                  {r.status === "confirmed" && r.reserved_until && (
+                    <span className="mt-0.5 flex items-center gap-1 text-xs font-medium text-accent">
+                      <Icon name="clock" className="h-3.5 w-3.5" />
+                      Keep it for their patient · <ReserveCountdown until={r.reserved_until} />
+                    </span>
+                  )}
                 </span>
                 <StatusPill status={r.status} />
               </li>
@@ -171,6 +255,13 @@ async function RequestLists({ pharmacy }: { pharmacy: MyPharmacy }) {
       )}
     </div>
   );
+}
+
+/** "2 packs of 28", "1 pack", or "" when neither was given. */
+function packText(r: { pack_size: number | null; quantity: number | null }): string {
+  if (!r.quantity && !r.pack_size) return "";
+  const packs = r.quantity ?? 1;
+  return `${packs} ${packs === 1 ? "pack" : "packs"}${r.pack_size ? ` of ${r.pack_size}` : ""}`;
 }
 
 function SectionTitle({ children, count }: { children: string; count?: number }) {
@@ -194,8 +285,8 @@ const STATUS_STYLES: Record<RequestStatus, string> = {
 };
 const STATUS_LABELS: Record<RequestStatus, string> = {
   pending: "Waiting",
-  confirmed: "They have it",
-  declined: "They don't",
+  confirmed: "Available",
+  declined: "Not available",
 };
 
 function StatusPill({ status }: { status: RequestStatus }) {

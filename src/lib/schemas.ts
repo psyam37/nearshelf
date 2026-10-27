@@ -41,3 +41,17 @@ export const signInSchema = z.object({
   next: z.string().optional(),
 });
 export type SignInInput = z.infer<typeof signInSchema>;
+
+// "Who nearby has this?" sent to every pharmacy within the radius. Only
+// inventory details: never anything about the patient (GDPR special category).
+export const broadcastSchema = z.object({
+  medicineId: z.uuid(),
+  radiusM: z.coerce.number().int().min(500).max(50_000),
+  // Units per pack, e.g. 28 tablets. Empty means "any pack size".
+  packSize: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.coerce.number().int().min(1).max(1000).optional(),
+  ),
+  quantity: z.coerce.number().int().min(1, "At least 1 pack").max(100).default(1),
+});
+export type BroadcastInput = z.infer<typeof broadcastSchema>;
