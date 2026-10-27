@@ -310,6 +310,13 @@ pharmacy nearby** with _Patient waiting_. As Old Street, open **Requests**, tap 
 request, **Confirm we have it**, and chat. Then try `/find` signed out after Hoxton
 switches on **Show to patients**. Print or display `/barcodes` to test scanning.
 
+**`/find` shows nothing?** That's the safety rules working: patients only see
+medicines a pharmacy **listed**, and only while stock was **confirmed in the last 2
+hours** (the seed data is older than that). For a quick demo, run
+[`supabase/demo/refresh_public_demo.sql`](supabase/demo/refresh_public_demo.sql) in
+the SQL Editor: it lists the demo pharmacies' non-controlled stock and re-confirms
+it, so `/find` has results for the next 2 hours.
+
 ## Database tests
 
 The security rules live in the database, so they're tested there. Each file in
