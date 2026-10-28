@@ -234,10 +234,12 @@ function YourPharmacy({ own }: { own: Own }) {
 
 /* --------------------------------------------------------- area demand */
 
-const formatChange = (change: number | null) =>
-  change === null
-    ? "—"
-    : `${change > 0 ? "+" : change < 0 ? "−" : ""}${Math.abs(Math.round(change))}%`;
+// Rounded before the sign is chosen, so −0.3% shows as "0%", not "−0%".
+const formatChange = (change: number | null) => {
+  if (change === null) return "—";
+  const rounded = Math.round(change);
+  return `${rounded > 0 ? "+" : rounded < 0 ? "−" : ""}${Math.abs(rounded)}%`;
+};
 
 function concessionFor(name: string, concessions: ConcessionList[] | null) {
   for (const [i, list] of (concessions ?? []).entries()) {
@@ -317,7 +319,7 @@ function AreaDemand({ area, medicines, byMedicine, concessions }: AreaDemandProp
                   {r.concession && (
                     <span
                       title={`${r.concession.name}, pack of ${r.concession.pack}: ${r.concession.price}`}
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
                         r.concession.current
                           ? "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-200"
                           : "bg-surface-2 text-muted"
