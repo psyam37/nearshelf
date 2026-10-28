@@ -2,7 +2,13 @@
 
 import { useActionState } from "react";
 import { Card, Icon, button, input } from "@/components/ui";
-import { addPharmacy, findPharmacyByOds, refreshDemo, type AdminState } from "./actions";
+import {
+  addPharmacy,
+  findPharmacyByOds,
+  refreshDemo,
+  syncNhsData,
+  type AdminState,
+} from "./actions";
 
 const idle: AdminState = { status: "idle" };
 
@@ -42,6 +48,31 @@ export function RefreshDemoCard() {
           <button type="submit" disabled={pending} className={button.primary}>
             <Icon name="bolt" className="h-4 w-4" />
             {pending ? "Refreshing…" : "Refresh demo"}
+          </button>
+        </form>
+      </div>
+      <Message state={state} />
+    </Card>
+  );
+}
+
+/** Loads the NHS dispensing data behind the Insights page. */
+export function SyncNhsDataCard() {
+  const [state, action, pending] = useActionState(syncNhsData, idle);
+  return (
+    <Card className="p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-md">
+          <h3 className="font-semibold">NHS data for Insights</h3>
+          <p className="mt-1 text-sm text-muted">
+            Loads monthly dispensing figures for every catalogue medicine and area from NHSBSA open
+            data. A few minutes the first time; after that, press it when a new month is out.
+          </p>
+        </div>
+        <form action={action}>
+          <button type="submit" disabled={pending} className={button.secondary}>
+            <Icon name="download" className="h-4 w-4" />
+            {pending ? "Loading NHS data…" : "Refresh NHS data"}
           </button>
         </form>
       </div>

@@ -39,6 +39,7 @@ export type Database = {
       }
       medicines: {
         Row: {
+          bnf_codes: string[]
           created_at: string
           dmd_vmp_id: string | null
           equivalence_group: string
@@ -49,6 +50,7 @@ export type Database = {
           strength: string | null
         }
         Insert: {
+          bnf_codes?: string[]
           created_at?: string
           dmd_vmp_id?: string | null
           equivalence_group: string
@@ -59,6 +61,7 @@ export type Database = {
           strength?: string | null
         }
         Update: {
+          bnf_codes?: string[]
           created_at?: string
           dmd_vmp_id?: string | null
           equivalence_group?: string
@@ -69,6 +72,35 @@ export type Database = {
           strength?: string | null
         }
         Relationships: []
+      }
+      nhs_dispensing: {
+        Row: {
+          icb_name: string
+          items: number
+          medicine_id: string
+          month: string
+        }
+        Insert: {
+          icb_name: string
+          items: number
+          medicine_id: string
+          month: string
+        }
+        Update: {
+          icb_name?: string
+          items?: number
+          medicine_id?: string
+          month?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nhs_dispensing_medicine_id_fkey"
+            columns: ["medicine_id"]
+            isOneToOne: false
+            referencedRelation: "medicines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pharmacies: {
         Row: {
@@ -548,6 +580,8 @@ export type Database = {
           verified: boolean
         }[]
       }
+      nhs_dispensing_months: { Args: never; Returns: string[] }
+      nhs_dispensing_series: { Args: { p_icb_name: string }; Returns: Json }
       outgoing_requests: {
         Args: { p_pharmacy_id: string }
         Returns: {
@@ -567,6 +601,7 @@ export type Database = {
           urgency: Database["public"]["Enums"]["request_urgency"]
         }[]
       }
+      pharmacy_insights: { Args: { p_pharmacy_id: string }; Returns: Json }
       public_find_stock: {
         Args: {
           p_lat: number
@@ -628,6 +663,7 @@ export type Database = {
       search_medicines: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
+          bnf_codes: string[]
           created_at: string
           dmd_vmp_id: string | null
           equivalence_group: string

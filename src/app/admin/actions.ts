@@ -6,6 +6,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { lookupPostcode } from "@/lib/geo";
+import { fetchPcaMonth, formatMonth, listPcaMonths, type PcaMonth } from "@/lib/nhs-data";
 import { lookupNhsOds, ODS_CODE_PATTERN, tidyCase } from "@/lib/ods";
 import { isPlatformAdmin } from "@/lib/pharmacy";
 import { createClient } from "@/lib/supabase/server";
@@ -145,5 +146,94 @@ export async function addPharmacy(_prev: AdminState, formData: FormData): Promis
   return {
     status: "done",
     message: `${found.name} is on MediBase. Its staff can now join with ODS code ${found.odsCode}.`,
+  };
+}
+
+/**
+ * Load NHS dispensing data for the Insights page: every month the NHSBSA has
+ * published that we don't have yet, plus the newest two again, because the
+ * NHS sometimes revises them. A few minutes the first time, seconds after.
+ */
+export async function syncNhsData(_prev: AdminState): Promise<AdminState> {
+  const denied = await requireAdmin();
+  if (denied) return { status: "error", message: denied };
+
+  const supabase = await createClient();
+  const [medicines, loaded] = await Promise.all([
+    supabase.from("medicines").select("id, bnf_codes"),
+    supabase.rpc("nhs_dispensing_months"),
+  ]);
+  if (medicines.error || loaded.error) {
+    return { status: "error", message: "Couldn't read the catalogue. Try again." };
+  }
+  // BNF code → our medicine. Several codes can belong to one medicine.
+  const medicineByCode = new Map(
+    medicines.data.flatMap((m) => m.bnf_codes.map((code) => [code, m.id] as const)),
+  );
+  const have = new Set(loaded.data);
+
+  let months: PcaMonth[];
+  try {
+    months = await listPcaMonths();
+  } catch {
+    return { status: "error", message: "The NHSBSA data service didn't answer. Try again later." };
+  }
+  const todo = months.filter((m, i) => !have.has(m.month) || i >= months.length - 2);
+
+  // A few months at a time, to be polite to the NHS service.
+  const codes = [...medicineByCode.keys()];
+  let rowsSaved = 0;
+  const failed: string[] = [];
+  for (let i = 0; i < todo.length; i += 4) {
+    const batch = todo.slice(i, i + 4);
+    const results = await Promise.allSettled(batch.map((m) => fetchPcaMonth(m.resource, codes)));
+
+    // Add up codes that belong to the same medicine, per month and ICB.
+    const totals = new Map<
+      string,
+      { month: string; icb_name: string; medicine_id: string; items: number }
+    >();
+    results.forEach((result, j) => {
+      if (result.status === "rejected") {
+        failed.push(batch[j].month);
+        return;
+      }
+      for (const row of result.value) {
+        const medicineId = medicineByCode.get(row.code);
+        if (!medicineId) continue;
+        const key = `${batch[j].month}|${row.icb}|${medicineId}`;
+        const total = totals.get(key);
+        if (total) total.items += row.items;
+        else
+          totals.set(key, {
+            month: batch[j].month,
+            icb_name: row.icb,
+            medicine_id: medicineId,
+            items: row.items,
+          });
+      }
+    });
+
+    const rows = [...totals.values()];
+    for (let k = 0; k < rows.length; k += 1000) {
+      const { error } = await supabase.from("nhs_dispensing").upsert(rows.slice(k, k + 1000));
+      if (error) {
+        console.error("saving NHS data failed:", error);
+        return { status: "error", message: "Couldn't save the NHS data. Try again." };
+      }
+    }
+    rowsSaved += rows.length;
+  }
+
+  refresh();
+  const range =
+    months.length > 0
+      ? `${formatMonth(months[0].month)} to ${formatMonth(months.at(-1)!.month)}`
+      : "none";
+  return {
+    status: failed.length > 0 ? "error" : "done",
+    message:
+      `NHS data up to date (${range}): ${todo.length - failed.length} months loaded, ${rowsSaved} rows.` +
+      (failed.length > 0 ? ` ${failed.length} months failed; press again to retry them.` : ""),
   };
 }

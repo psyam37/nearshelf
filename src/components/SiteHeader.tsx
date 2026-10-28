@@ -72,6 +72,12 @@ async function AccountLinks() {
         <span className="hidden sm:inline">My pharmacy</span>
       </NavLink>
       {pharmacy && (
+        <NavLink href="/insights">
+          <Icon name="chart" className="h-[18px] w-[18px]" />
+          <span className="hidden sm:inline">Insights</span>
+        </NavLink>
+      )}
+      {pharmacy && (
         <NavLink href="/requests">
           <RequestsLink pharmacyId={pharmacy.id} initialPending={pendingCount} />
         </NavLink>

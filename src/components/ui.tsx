@@ -41,6 +41,7 @@ const ICON_PATHS = {
   mobile: "M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 17h2",
   monitor: "M4 4h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm4 16h8m-4-4v4",
   download: "M12 3v12m-5-5 5 5 5-5M5 21h14",
+  chart: "M4 20h16M7 16v-4m5 4V6m5 10v-7",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

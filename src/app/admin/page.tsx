@@ -5,11 +5,14 @@ import { ApplicationsList } from "@/components/ApplicationsList";
 import { ListSkeleton, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { isPlatformAdmin } from "@/lib/pharmacy";
-import { AddPharmacyCard, RefreshDemoCard } from "./AdminTools";
+import { AddPharmacyCard, RefreshDemoCard, SyncNhsDataCard } from "./AdminTools";
 
 export const metadata: Metadata = {
   title: "Admin",
 };
+
+// Loading the NHS data history can take a few minutes the first time.
+export const maxDuration = 300;
 
 export default function AdminPage() {
   return (
@@ -31,11 +34,12 @@ async function AdminContent() {
       <PageHeader
         eyebrow="MediBase admin"
         title="Admin"
-        description="Demo tools for pitches, onboarding real pharmacies, and staff applications."
+        description="Demo tools for pitches, onboarding real pharmacies, NHS data, and staff applications."
       />
       <div className="space-y-4">
         <RefreshDemoCard />
         <AddPharmacyCard />
+        <SyncNhsDataCard />
       </div>
       <h2 className="mt-10 mb-1 text-lg font-semibold">Staff applications</h2>
       <p className="mb-3 text-sm text-muted">
