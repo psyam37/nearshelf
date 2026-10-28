@@ -35,7 +35,7 @@ export function RedirectionSteps({ pharmacy, reservedUntil }: RedirectionStepsPr
     },
     {
       title: "Return the prescription to the NHS Spine",
-      body: "In your PMR system, return (release) the electronic prescription so it can be downloaded elsewhere. Don't dispense or transfer the medicine yourself.",
+      body: "In your PMR (ProScript Connect, Titan or similar), return the electronic prescription to the Spine so it can be downloaded elsewhere. Don't dispense or transfer the medicine yourself.",
     },
     {
       title: `${pharmacy.name} dispenses it`,

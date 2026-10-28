@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Card, LogoMark, Skeleton } from "@/components/ui";
 import { getCurrentUser, safeNextPath } from "@/lib/auth";
+import { demoSignInEnabled } from "@/lib/demo";
 import { DevSignInForm } from "./DevSignInForm";
 import { SignInForm } from "./SignInForm";
 
@@ -50,7 +51,7 @@ async function SignInContent({ searchParams }: Pick<PageProps<"/sign-in">, "sear
         </p>
       )}
       <SignInForm next={next} />
-      {process.env.NODE_ENV === "development" && <DevSignInForm next={next} />}
+      {demoSignInEnabled() && <DevSignInForm next={next} />}
     </>
   );
 }

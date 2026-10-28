@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { StockLevel } from "@/lib/types";
 import { PublicToggle } from "./PublicToggle";
 import { ReconfirmAllButton } from "./ReconfirmAllButton";
+import { StockImportCard } from "./StockImportCard";
 import { StockLevelForm } from "./StockLevelForm";
 
 export const metadata: Metadata = {
@@ -176,6 +177,10 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
           )}
         </Card>
       </section>
+
+      <div className="mt-10">
+        <StockImportCard pharmacyId={pharmacy.id} />
+      </div>
 
       <h2 className="mt-10 mb-3 text-lg font-semibold">Stock levels</h2>
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">

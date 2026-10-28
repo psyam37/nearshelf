@@ -6,7 +6,7 @@ import { devPasswordSignIn, type SignInState } from "./actions";
 
 const inputClass = `mt-1 ${input}`;
 
-/** Only rendered under `npm run dev`. See devPasswordSignIn. */
+/** Shown locally, or on the live site when demo accounts are set up (lib/demo.ts). */
 export function DevSignInForm({ next }: { next: string }) {
   const [state, formAction, pending] = useActionState<SignInState, FormData>(devPasswordSignIn, {
     status: "idle",
@@ -15,7 +15,7 @@ export function DevSignInForm({ next }: { next: string }) {
   return (
     <details className="mt-6 rounded-xl border border-dashed border-amber-400/70 bg-amber-50/50 p-4 text-sm dark:bg-amber-950/20">
       <summary className="cursor-pointer font-semibold text-amber-800 dark:text-amber-400">
-        Developer sign-in (test accounts, local only)
+        Demo accounts (password sign-in)
       </summary>
       <form action={formAction} className="mt-3 space-y-3">
         <input type="hidden" name="next" value={next} />

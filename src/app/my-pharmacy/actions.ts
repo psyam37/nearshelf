@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { stockUpdateSchema } from "@/lib/schemas";
+import { readStockReport } from "@/lib/stock-import";
 import { createClient } from "@/lib/supabase/server";
 import type { StockLevel } from "@/lib/types";
 
@@ -138,4 +139,85 @@ export async function setPublicListing(
   }
   refresh();
   return { status: "idle" };
+}
+
+export type ImportState =
+  | { status: "idle" }
+  | { status: "imported"; updated: number; total: number; unmatched: string[] }
+  | { status: "error"; message: string };
+
+const importSchema = z.object({
+  pharmacyId: z.uuid(),
+  lowAt: z.coerce.number().int().min(0).max(1000).default(3),
+  file: z
+    .instanceof(File, { message: "Choose a CSV file" })
+    .refine((f) => f.size > 0, "That file is empty")
+    .refine((f) => f.size <= 1_000_000, "Keep the file under 1 MB"),
+});
+
+/**
+ * Set stock levels from a PMR stock report (ProScript Connect, Titan or any
+ * PMR's CSV export). Quantities become levels: 0 → Out, up to `lowAt` → Low,
+ * more → In stock. Only medicines MediBase recognises are changed.
+ */
+export async function importStockReport(
+  _prev: ImportState,
+  formData: FormData,
+): Promise<ImportState> {
+  if (!(await getCurrentUser())) {
+    return { status: "error", message: "Your session has ended. Sign in again." };
+  }
+  const parsed = importSchema.safeParse({
+    pharmacyId: formData.get("pharmacyId"),
+    lowAt: formData.get("lowAt") || undefined,
+    file: formData.get("file"),
+  });
+  if (!parsed.success) return { status: "error", message: z.prettifyError(parsed.error) };
+  const { pharmacyId, lowAt, file } = parsed.data;
+
+  const supabase = await createClient();
+  const [medicines, barcodes] = await Promise.all([
+    supabase.from("medicines").select("id, name, strength, form"),
+    supabase.from("medicine_barcodes").select("gtin, medicine_id"),
+  ]);
+  if (medicines.error || barcodes.error) {
+    return { status: "error", message: "Couldn't load the medicine list. Try again." };
+  }
+
+  const report = readStockReport(
+    await file.text(),
+    medicines.data,
+    new Map(barcodes.data.map((b) => [b.gtin, b.medicine_id])),
+    lowAt,
+  );
+  if ("error" in report) return { status: "error", message: report.error };
+  if (report.rows.length === 0) {
+    return {
+      status: "error",
+      message: `None of the ${report.total} rows matched a MediBase medicine.`,
+    };
+  }
+
+  // Row level security: only your own pharmacy's stock can be written.
+  const { error } = await supabase.from("stock_status").upsert(
+    report.rows.map((row) => ({
+      pharmacy_id: pharmacyId,
+      medicine_id: row.medicineId,
+      level: row.level,
+    })),
+    { onConflict: "pharmacy_id,medicine_id" },
+  );
+  if (error) {
+    if (error.code === "42501") return { status: "error", message: NOT_YOUR_PHARMACY };
+    console.error("import failed:", error);
+    return { status: "error", message: "Couldn't save. Try again." };
+  }
+
+  refresh();
+  return {
+    status: "imported",
+    updated: report.rows.length,
+    total: report.total,
+    unmatched: report.unmatched.slice(0, 8),
+  };
 }

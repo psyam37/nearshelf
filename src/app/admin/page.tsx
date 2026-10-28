@@ -5,6 +5,7 @@ import { ApplicationsList } from "@/components/ApplicationsList";
 import { ListSkeleton, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { isPlatformAdmin } from "@/lib/pharmacy";
+import { AddPharmacyCard, RefreshDemoCard } from "./AdminTools";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -29,9 +30,18 @@ async function AdminContent() {
     <>
       <PageHeader
         eyebrow="MediBase admin"
-        title="Staff applications"
-        description="Every pending application. Usually a pharmacy's managers approve their own staff; you approve the first member of a pharmacy, which has no manager yet."
+        title="Admin"
+        description="Demo tools for pitches, onboarding real pharmacies, and staff applications."
       />
+      <div className="space-y-4">
+        <RefreshDemoCard />
+        <AddPharmacyCard />
+      </div>
+      <h2 className="mt-10 mb-1 text-lg font-semibold">Staff applications</h2>
+      <p className="mb-3 text-sm text-muted">
+        Usually a pharmacy&apos;s managers approve their own staff; you approve the first member of
+        a pharmacy, which has no manager yet.
+      </p>
       <ApplicationsList />
     </>
   );

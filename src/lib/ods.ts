@@ -16,15 +16,34 @@ const ordResponseSchema = z.object({
     Name: z.string(),
     Status: z.string(),
     GeoLoc: z
-      .object({ Location: z.object({ PostCode: z.string().optional() }).partial() })
+      .object({
+        Location: z
+          .object({ AddrLn1: z.string(), Town: z.string(), PostCode: z.string() })
+          .partial(),
+      })
       .optional(),
     Roles: z.object({ Role: z.array(z.object({ id: z.string() })) }),
   }),
 });
 
 export type NhsOdsLookup =
-  | { found: true; name: string; postcode: string | null; active: boolean; isPharmacy: boolean }
+  | {
+      found: true;
+      name: string;
+      addressLine: string | null;
+      town: string | null;
+      postcode: string | null;
+      active: boolean;
+      isPharmacy: boolean;
+    }
   | { found: false };
+
+/** "BOOTS" → "Boots", "BURTON-ON-TRENT" → "Burton-On-Trent": the NHS data is all capitals. */
+export function tidyCase(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/(^|[\s\-'(])([a-z])/g, (_, before, letter) => before + letter.toUpperCase());
+}
 
 /** Looks up a code in the NHS directory. Throws if the NHS service is unreachable. */
 export async function lookupNhsOds(code: string): Promise<NhsOdsLookup> {
@@ -38,10 +57,13 @@ export async function lookupNhsOds(code: string): Promise<NhsOdsLookup> {
   const parsed = ordResponseSchema.safeParse(await res.json());
   if (!parsed.success) throw new Error("NHS ODS returned something unexpected");
   const org = parsed.data.Organisation;
+  const location = org.GeoLoc?.Location;
   return {
     found: true,
     name: org.Name,
-    postcode: org.GeoLoc?.Location?.PostCode ?? null,
+    addressLine: location?.AddrLn1 ?? null,
+    town: location?.Town ?? null,
+    postcode: location?.PostCode ?? null,
     active: org.Status === "Active",
     isPharmacy: org.Roles.Role.some((role) => role.id === PHARMACY_ROLE),
   };

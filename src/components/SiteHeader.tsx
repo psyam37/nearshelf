@@ -30,6 +30,12 @@ async function AccountLinks() {
   if (!user) {
     return (
       <div className="flex items-center gap-1 sm:gap-2">
+        <span className="hidden md:inline-flex">
+          <NavLink href="/pharmacies">
+            <Icon name="store" className="h-[18px] w-[18px]" />
+            For pharmacies
+          </NavLink>
+        </span>
         <NavLink href="/find">
           <Icon name="search" className="h-[18px] w-[18px]" />
           <span className="hidden sm:inline">Find your medicine</span>

@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { safeNextPath } from "@/lib/auth";
+import { passwordSignInAllowed } from "@/lib/demo";
 import { signInSchema } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
 
@@ -54,24 +55,24 @@ const devSignInSchema = z.object({
 });
 
 /**
- * Password sign-in for test accounts, so testing doesn't use up Supabase's
- * small allowance of sign-in emails. Only works under `npm run dev`: a
- * deployed build refuses it even if someone calls this action directly.
+ * Password sign-in for demo and test accounts, so demos don't depend on
+ * sign-in emails. Locally any account may use it; on the live site only the
+ * addresses in DEMO_SIGNIN_EMAILS (see lib/demo.ts). The check is here, in
+ * the action, so calling it directly doesn't get around it.
  */
 export async function devPasswordSignIn(
   _prev: SignInState,
   formData: FormData,
 ): Promise<SignInState> {
-  if (process.env.NODE_ENV !== "development") {
-    return { status: "error", message: "Not available." };
-  }
-
   const parsed = devSignInSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
     next: formData.get("next") ?? undefined,
   });
   if (!parsed.success) return { status: "error", message: "Enter an email and password." };
+  if (!passwordSignInAllowed(parsed.data.email)) {
+    return { status: "error", message: "That isn't a demo account. Use the email link above." };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({

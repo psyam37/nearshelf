@@ -464,6 +464,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_pharmacy: {
+        Args: {
+          p_address_line: string
+          p_lat: number
+          p_lng: number
+          p_name: string
+          p_ods_code: string
+          p_phone: string
+          p_postcode: string
+          p_town: string
+        }
+        Returns: string
+      }
       broadcast_stock_request: {
         Args: {
           p_from_pharmacy_id: string
@@ -593,6 +606,7 @@ export type Database = {
         }[]
       }
       reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
+      refresh_demo_data: { Args: never; Returns: Json }
       request_open_window: { Args: never; Returns: string }
       request_state: {
         Args: { r: Database["public"]["Tables"]["stock_requests"]["Row"] }
