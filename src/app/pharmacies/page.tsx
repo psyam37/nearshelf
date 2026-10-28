@@ -279,6 +279,13 @@ export default function PharmaciesPage() {
               barcode scanner. Upload a CSV stock report to set your levels in one go. Direct PMR
               integration is on the roadmap.
             </p>
+            <Link
+              href="/install"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline"
+            >
+              Or install it as an app on your phone and dispensary PC
+              <Icon name="arrow" className="h-4 w-4" />
+            </Link>
           </div>
         </Card>
       </section>

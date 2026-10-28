@@ -4,6 +4,7 @@ import { LogoMark } from "@/components/ui";
 const LINKS = [
   { href: "/pharmacies", label: "For pharmacies" },
   { href: "/find", label: "Find your medicine" },
+  { href: "/install", label: "Install the app" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
   { href: "/barcodes", label: "Demo barcodes" },
