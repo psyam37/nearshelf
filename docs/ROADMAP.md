@@ -5,12 +5,12 @@ then insights that show shortages coming, then smart stock built on each pharmac
 own PMR data, and finally a connected area. Each phase has its own branch, and each
 finished stage of work is a tagged release.
 
-| Phase                  | What it adds                                                                                                                                   | Status          | Branch                                                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
-| **0 · Core app**       | Live stock, one-tap requests, 30-minute hold, handover chat, push alerts, patient finder, PMR CSV import, install as an app                    | ✅ Live         | [`phase/0-core`](https://github.com/psyam37/pharmacy-stock-finder/tree/phase/0-core)                     |
-| **1 · Insights**       | Unmet demand, response and reliability scores, referral log, NHS dispensing trends by ICB, price-concession shortage signals, seasonal outlook | 🟡 Preview live | [`phase/1-insights`](https://github.com/psyam37/pharmacy-stock-finder/tree/phase/1-insights)             |
-| **2 · Smart stock**    | Days of stock left from PMR uploads, slow-moving stock, reorder alerts                                                                         | 🔜 Next         | [`phase/2-smart-stock`](https://github.com/psyam37/pharmacy-stock-finder/tree/phase/2-smart-stock)       |
-| **3 · Connected area** | Direct ProScript Connect and Titan links, one view across a group's branches, shortage early-warning for LPCs and ICBs                         | 🌱 Later        | [`phase/3-connected-area`](https://github.com/psyam37/pharmacy-stock-finder/tree/phase/3-connected-area) |
+| Phase                  | What it adds                                                                                                                                   | Status          | Branch                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| **0 · Core app**       | Live stock, one-tap requests, 30-minute hold, handover chat, push alerts, patient finder, PMR CSV import, install as an app                    | ✅ Live         | [`phase/0-core`](https://github.com/psyam37/nearshelf/tree/phase/0-core)                     |
+| **1 · Insights**       | Unmet demand, response and reliability scores, referral log, NHS dispensing trends by ICB, price-concession shortage signals, seasonal outlook | 🟡 Preview live | [`phase/1-insights`](https://github.com/psyam37/nearshelf/tree/phase/1-insights)             |
+| **2 · Smart stock**    | Days of stock left from PMR uploads, slow-moving stock, reorder alerts                                                                         | 🔜 Next         | [`phase/2-smart-stock`](https://github.com/psyam37/nearshelf/tree/phase/2-smart-stock)       |
+| **3 · Connected area** | Direct ProScript Connect and Titan links, one view across a group's branches, shortage early-warning for LPCs and ICBs                         | 🌱 Later        | [`phase/3-connected-area`](https://github.com/psyam37/nearshelf/tree/phase/3-connected-area) |
 
 ## Phase 0 · Core app ✅
 
@@ -58,16 +58,16 @@ Built on each pharmacy's own PMR uploads. Quantities stay private to that pharma
 
 ## Release history
 
-| Release                                                                        | Date        | Stage                                                                               |
-| ------------------------------------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------- |
-| [v0.1.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.1.0) | 26 Oct 2026 | Foundations: medicine search, nearby stock list and map                             |
-| [v0.2.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.2.0) | 26 Oct 2026 | Accounts and live stock: sign-in, My pharmacy, live updates, stock requests         |
-| [v0.3.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.3.0) | 26 Oct 2026 | Brand and scanning: logo, design system, barcode scanning                           |
-| [v0.4.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.4.0) | 27 Oct 2026 | Verified network: GPhC sign-up, holds, broadcasts, handover chat, push alerts       |
-| [v0.5.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.5.0) | 27 Oct 2026 | Patient finder with pharmacy-controlled listings                                    |
-| [v0.6.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.6.0) | 28 Oct 2026 | Pitch-ready pilot: pitch page, PMR import, admin tools, link previews, install page |
-| [v0.7.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.7.0) | 28 Oct 2026 | Insights preview with NHS open data                                                 |
-| [v0.8.0](https://github.com/psyam37/pharmacy-stock-finder/releases/tag/v0.8.0) | 29 Oct 2026 | Renamed to NearShelf                                                                |
+| Release                                                            | Date        | Stage                                                                               |
+| ------------------------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------- |
+| [v0.1.0](https://github.com/psyam37/nearshelf/releases/tag/v0.1.0) | 26 Oct 2026 | Foundations: medicine search, nearby stock list and map                             |
+| [v0.2.0](https://github.com/psyam37/nearshelf/releases/tag/v0.2.0) | 26 Oct 2026 | Accounts and live stock: sign-in, My pharmacy, live updates, stock requests         |
+| [v0.3.0](https://github.com/psyam37/nearshelf/releases/tag/v0.3.0) | 26 Oct 2026 | Brand and scanning: logo, design system, barcode scanning                           |
+| [v0.4.0](https://github.com/psyam37/nearshelf/releases/tag/v0.4.0) | 27 Oct 2026 | Verified network: GPhC sign-up, holds, broadcasts, handover chat, push alerts       |
+| [v0.5.0](https://github.com/psyam37/nearshelf/releases/tag/v0.5.0) | 27 Oct 2026 | Patient finder with pharmacy-controlled listings                                    |
+| [v0.6.0](https://github.com/psyam37/nearshelf/releases/tag/v0.6.0) | 28 Oct 2026 | Pitch-ready pilot: pitch page, PMR import, admin tools, link previews, install page |
+| [v0.7.0](https://github.com/psyam37/nearshelf/releases/tag/v0.7.0) | 28 Oct 2026 | Insights preview with NHS open data                                                 |
+| [v0.8.0](https://github.com/psyam37/nearshelf/releases/tag/v0.8.0) | 29 Oct 2026 | Renamed to NearShelf                                                                |
 
 ## How the branches work
 
