@@ -84,7 +84,7 @@ patients can see who has a hard-to-find medicine nearby.
 - [Deploying](#deploying)
 - [Project structure](#project-structure)
 - [Scripts](#scripts)
-- [Limitations and next steps](#limitations-and-next-steps)
+- [Roadmap](#roadmap)
 
 ## Who it's for
 
@@ -410,18 +410,23 @@ supabase/
 | `npm run db:start` / `db:stop` / `db:reset` | Local Supabase (Docker)                             |
 | `npm run db:types:local`                    | Types from the local database                       |
 
-## Limitations and next steps
+## Roadmap
+
+| Phase                  | What it adds                                                                                             | Status          | Branch                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- | --------------- | ------------------------ |
+| **0 · Core app**       | Live stock, one-tap requests, 30-minute hold, handover chat, push alerts, patient finder, PMR CSV import | ✅ Live         | `phase/0-core`           |
+| **1 · Insights**       | Unmet demand, response scores, referral log, NHS dispensing trends, shortage signals                     | 🟡 Preview live | `phase/1-insights`       |
+| **2 · Smart stock**    | Days of stock left from PMR uploads, slow-moving stock, reorder alerts                                   | 🔜 Next         | `phase/2-smart-stock`    |
+| **3 · Connected area** | Direct ProScript Connect and Titan links, group view, area early-warning                                 | 🌱 Later        | `phase/3-connected-area` |
+
+The full plan, the release history (v0.1.0 to v0.8.0) and how the branches work are in
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+### Known limitations
 
 - **Demo data.** Real use needs real pharmacies (onboarded via their ODS code) and the
   full NHS **dm+d** medicines catalogue (VMP/AMPP, including real pack GTINs).
-- **Manual stock updates** (Phase 1). Phase 2: an open API, or a desktop helper, for
-  PMR systems such as EMIS or Positive Solutions.
 - **GPhC checks are manual**: the register has no public API.
 - **Rate limiting** on the public finder is per server instance; a shared store
   (e.g. Redis) would make it exact.
-- **Before real use:** a privacy notice, terms of use, and review by a pharmacy
-  regulation adviser.
-- **Ideas:** surplus / near-expiry flags, GP-surgery access, and an inter-company
-  **Hub & Spoke** dispensing network on the same real-time foundation.
-
-The original 14-day learning plan is in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+- **Before wider use:** review by a pharmacy regulation adviser.
