@@ -34,7 +34,7 @@ export async function applyToJoin(_prev: JoinState, formData: FormData): Promise
     console.error("pharmacy lookup failed:", findError);
     return { status: "error", message: "Couldn't check that code. Try again." };
   }
-  if (!pharmacy) return { status: "error", message: await notOnMediBaseMessage(odsCode) };
+  if (!pharmacy) return { status: "error", message: await notOnNearShelfMessage(odsCode) };
 
   // The database fills in who is applying and sets the status to pending.
   const { error } = await supabase
@@ -46,7 +46,7 @@ export async function applyToJoin(_prev: JoinState, formData: FormData): Promise
       return {
         status: "error",
         message: error.message.includes("gphc_once")
-          ? "That GPhC number is already registered with MediBase. Contact us if this is wrong."
+          ? "That GPhC number is already registered with NearShelf. Contact us if this is wrong."
           : "You already have an application waiting. Withdraw it to apply somewhere else.",
       };
     }
@@ -61,17 +61,17 @@ export async function applyToJoin(_prev: JoinState, formData: FormData): Promise
   return { status: "applied", pharmacyName: pharmacy.name };
 }
 
-/** A helpful reason when the code isn't one of MediBase's pharmacies. */
-async function notOnMediBaseMessage(odsCode: string): Promise<string> {
+/** A helpful reason when the code isn't one of NearShelf's pharmacies. */
+async function notOnNearShelfMessage(odsCode: string): Promise<string> {
   try {
     const nhs = await lookupNhsOds(odsCode);
     if (!nhs.found) return `No NHS organisation has the code ${odsCode}. Check it and try again.`;
     if (!nhs.isPharmacy) return `${odsCode} is ${nhs.name}, which isn't a pharmacy.`;
     if (!nhs.active) return `${nhs.name} (${odsCode}) is no longer active in the NHS directory.`;
-    return `${nhs.name}${nhs.postcode ? `, ${nhs.postcode}` : ""} is a real pharmacy, but not on MediBase yet. Ask us to add it.`;
+    return `${nhs.name}${nhs.postcode ? `, ${nhs.postcode}` : ""} is a real pharmacy, but not on NearShelf yet. Ask us to add it.`;
   } catch (err) {
     console.error(err);
-    return `${odsCode} isn't a pharmacy on MediBase.`;
+    return `${odsCode} isn't a pharmacy on NearShelf.`;
   }
 }
 

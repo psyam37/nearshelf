@@ -1,6 +1,6 @@
 import { OG_SIZE, ogCard } from "@/lib/og-card";
 
-export const alt = "MediBase for pharmacies: stop phoning round, find it in one tap";
+export const alt = "NearShelf for pharmacies: stop phoning round, find it in one tap";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 

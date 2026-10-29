@@ -18,7 +18,7 @@ export default function JoinPage() {
       <PageHeader
         eyebrow="Verified access"
         title="Join your pharmacy"
-        description="MediBase is for registered pharmacy professionals. Tell us your GPhC number and your branch, and a manager there will verify you."
+        description="NearShelf is for registered pharmacy professionals. Tell us your GPhC number and your branch, and a manager there will verify you."
       />
       <Suspense fallback={<Skeleton className="h-80 rounded-2xl" />}>
         <JoinContent />
@@ -55,7 +55,7 @@ async function JoinContent() {
         <p className="mt-1 text-muted">
           You applied to join <strong className="text-ink">{application.pharmacy.name}</strong> (
           {application.pharmacy.postcode}) {formatUpdatedAgo(application.created_at, now)}. A
-          manager there, or a MediBase admin, will check your GPhC registration.
+          manager there, or a NearShelf admin, will check your GPhC registration.
         </p>
         <div className="mt-5">
           <WithdrawButton applicationId={application.id} />

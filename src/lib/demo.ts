@@ -1,4 +1,4 @@
-// Demo accounts: password sign-in for showing MediBase to pharmacies, without
+// Demo accounts: password sign-in for showing NearShelf to pharmacies, without
 // waiting for (or running out of) sign-in emails. Server only.
 //
 // Locally (`npm run dev`) any account may use it. On the live site only the

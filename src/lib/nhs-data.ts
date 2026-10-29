@@ -112,7 +112,7 @@ export async function latestConcessions(): Promise<ConcessionList[] | null> {
   "use cache";
   cacheLife("hours");
   try {
-    const res = await fetch(CONCESSIONS_SOURCE, { headers: { "User-Agent": "MediBase/1.0" } });
+    const res = await fetch(CONCESSIONS_SOURCE, { headers: { "User-Agent": "NearShelf/1.0" } });
     if (!res.ok) return null;
     const html = await res.text();
 

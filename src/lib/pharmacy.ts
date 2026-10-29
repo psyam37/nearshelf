@@ -24,7 +24,7 @@ export async function getMyPharmacy(): Promise<MyPharmacy | null> {
   return data?.pharmacy ?? null;
 }
 
-/** Is the signed-in user a MediBase admin? (They can only read their own row.) */
+/** Is the signed-in user a NearShelf admin? (They can only read their own row.) */
 export async function isPlatformAdmin(): Promise<boolean> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("platform_admins").select("user_id").maybeSingle();

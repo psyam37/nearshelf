@@ -21,7 +21,7 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
       <div className="w-full max-w-sm">
         <Card className="p-7 shadow-xl shadow-brand-950/5">
           <LogoMark className="h-12 w-12" />
-          <h1 className="mt-5 text-2xl font-semibold tracking-tight">Sign in to MediBase</h1>
+          <h1 className="mt-5 text-2xl font-semibold tracking-tight">Sign in to NearShelf</h1>
           <p className="mt-1.5 mb-6 text-sm text-muted">
             For pharmacy staff. We&apos;ll email you a sign-in link, no password needed.
           </p>

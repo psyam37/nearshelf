@@ -7,13 +7,13 @@ import { Card, Icon, LogoMark, button, type IconName } from "@/components/ui";
 export const metadata: Metadata = {
   title: "For pharmacies",
   description:
-    "Stop phoning around. MediBase shows which pharmacies near you have a medicine, and lets you ask them all in one tap. Free pilot for independent pharmacies.",
+    "Stop phoning around. NearShelf shows which pharmacies near you have a medicine, and lets you ask them all in one tap. Free pilot for independent pharmacies.",
 };
 
 const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 const pilotHref = CONTACT
-  ? `mailto:${CONTACT}?subject=${encodeURIComponent("MediBase pilot")}&body=${encodeURIComponent(
-      "Hi, I'd like to hear about the MediBase pilot.\n\nPharmacy name:\nODS code:\nBest time to talk:",
+  ? `mailto:${CONTACT}?subject=${encodeURIComponent("NearShelf pilot")}&body=${encodeURIComponent(
+      "Hi, I'd like to hear about the NearShelf pilot.\n\nPharmacy name:\nODS code:\nBest time to talk:",
     )}`
   : "/join";
 
@@ -69,7 +69,7 @@ const STEPS: { icon: IconName; title: string; text: string }[] = [
   {
     icon: "message",
     title: "Tell the patient where to go",
-    text: "MediBase shows the address, phone number and the steps, right when you need them.",
+    text: "NearShelf shows the address, phone number and the steps, right when you need them.",
   },
   {
     icon: "store",
@@ -81,15 +81,15 @@ const STEPS: { icon: IconName; title: string; text: string }[] = [
 const FAQS: { q: string; a: ReactNode }[] = [
   {
     q: "Is this legal? We can't trade medicines with other businesses.",
-    a: "Correct, and MediBase never does. There are no payments, orders or stock transfers. It only shows who has a medicine, so the patient's prescription can go to that pharmacy. Medicines never move between businesses, so no Wholesale Dealer's Licence is involved.",
+    a: "Correct, and NearShelf never does. There are no payments, orders or stock transfers. It only shows who has a medicine, so the patient's prescription can go to that pharmacy. Medicines never move between businesses, so no Wholesale Dealer's Licence is involved.",
   },
   {
     q: "What about patient data and GDPR?",
-    a: "MediBase holds no patient data at all. Requests contain stock details only, and the handover chat refuses anything that looks like an NHS number, date of birth, postcode or phone number. The only personal data is your staff's name and GPhC number, used to verify them.",
+    a: "NearShelf holds no patient data at all. Requests contain stock details only, and the handover chat refuses anything that looks like an NHS number, date of birth, postcode or phone number. The only personal data is your staff's name and GPhC number, used to verify them.",
   },
   {
     q: "Do I have to change my PMR? We use ProScript Connect / Titan.",
-    a: "No. MediBase runs in a browser tab next to ProScript Connect, Titan or any other PMR, and works with the same USB barcode scanner. You can also upload a stock report exported from your PMR to set your levels in one go. A direct live link with PMR vendors is planned.",
+    a: "No. NearShelf runs in a browser tab next to ProScript Connect, Titan or any other PMR, and works with the same USB barcode scanner. You can also upload a stock report exported from your PMR to set your levels in one go. A direct live link with PMR vendors is planned.",
   },
   {
     q: "Will competitors see all my stock?",
@@ -129,8 +129,8 @@ export default function PharmaciesPage() {
               <span className="block text-brand-200">Find it in one tap.</span>
             </h1>
             <p className="mt-5 max-w-lg text-lg text-brand-100/85">
-              When a wholesaler can&apos;t supply, MediBase shows which pharmacies near you have it,
-              and asks them all at once. Your patient leaves knowing exactly where to go.
+              When a wholesaler can&apos;t supply, NearShelf shows which pharmacies near you have
+              it, and asks them all at once. Your patient leaves knowing exactly where to go.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
@@ -150,7 +150,7 @@ export default function PharmaciesPage() {
           </div>
           <div className="relative hidden lg:block">
             <div className="rotate-1 rounded-3xl bg-white/10 p-3 ring-1 ring-white/15 backdrop-blur">
-              <Screen name="requests" alt="MediBase request feed" width={1600} height={2328} />
+              <Screen name="requests" alt="NearShelf request feed" width={1600} height={2328} />
             </div>
             <div className="absolute -bottom-6 -left-8 flex items-center gap-3 rounded-2xl bg-ink/90 px-4 py-3 text-white shadow-2xl ring-1 ring-white/10">
               <LogoMark className="h-9 w-9" />
@@ -214,7 +214,7 @@ export default function PharmaciesPage() {
           </div>
           <Screen
             name="search"
-            alt="MediBase search with map and verified stock"
+            alt="NearShelf search with map and verified stock"
             width={1600}
             height={3211}
           />
@@ -275,7 +275,7 @@ export default function PharmaciesPage() {
               Works alongside ProScript Connect, Titan and other PMRs
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Nothing to install: MediBase runs in a browser tab next to your PMR, with the same
+              Nothing to install: NearShelf runs in a browser tab next to your PMR, with the same
               barcode scanner. Upload a CSV stock report to set your levels in one go. Direct PMR
               integration is on the roadmap.
             </p>
@@ -345,7 +345,7 @@ export default function PharmaciesPage() {
         <div className="bg-logo relative overflow-hidden rounded-3xl px-8 py-12 text-center text-white shadow-xl shadow-brand-950/20 sm:px-16">
           <LogoMark className="mx-auto h-14 w-14" />
           <h2 className="mt-5 text-3xl font-semibold tracking-tight">
-            Be one of the first pharmacies on MediBase
+            Be one of the first pharmacies on NearShelf
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-brand-100/85">
             Free during the pilot. Setup takes ten minutes: we add your pharmacy from its ODS code,

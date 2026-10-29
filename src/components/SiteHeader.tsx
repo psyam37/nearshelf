@@ -12,7 +12,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-[500] border-b border-line bg-canvas/80 backdrop-blur-lg">
       <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/" aria-label="MediBase home" className="shrink-0">
+        <Link href="/" aria-label="NearShelf home" className="shrink-0">
           <Logo />
         </Link>
         {/* The session is read per request, so only this part waits for it. */}

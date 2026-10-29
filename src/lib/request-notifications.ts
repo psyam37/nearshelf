@@ -1,4 +1,4 @@
-// What MediBase says in push notifications about requests. Server only.
+// What NearShelf says in push notifications about requests. Server only.
 // Stock details only: never anything about the patient.
 import "server-only";
 import { notifyPharmacies, packText } from "@/lib/push";

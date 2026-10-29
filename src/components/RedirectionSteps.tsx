@@ -7,7 +7,7 @@ interface RedirectionStepsProps {
 }
 
 /**
- * What to do after another pharmacy says "Available". MediBase never moves
+ * What to do after another pharmacy says "Available". NearShelf never moves
  * medicine between businesses (that would need a Wholesale Dealer's Licence):
  * the patient's prescription goes to the pharmacy that has the stock.
  */

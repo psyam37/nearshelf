@@ -124,7 +124,7 @@ export function AddPharmacyCard() {
             />
           </label>
           <button type="submit" disabled={adding} className={`${button.primary} mt-3`}>
-            {adding ? "Adding…" : "Add to MediBase"}
+            {adding ? "Adding…" : "Add to NearShelf"}
           </button>
         </form>
       )}

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* -----------------------------------------------------------------------------
-   MediBase design tokens: white, silver and green, taken from the logo.
+   NearShelf design tokens: white, silver and green, taken from the logo.
    Components use these names (bg-surface, text-muted, border-line,
    bg-brand-700, text-silver-500…) instead of raw colours, so the look changes
    here in one place, and dark mode is just a second set of values.

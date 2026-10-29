@@ -158,7 +158,7 @@ const importSchema = z.object({
 /**
  * Set stock levels from a PMR stock report (ProScript Connect, Titan or any
  * PMR's CSV export). Quantities become levels: 0 → Out, up to `lowAt` → Low,
- * more → In stock. Only medicines MediBase recognises are changed.
+ * more → In stock. Only medicines NearShelf recognises are changed.
  */
 export async function importStockReport(
   _prev: ImportState,
@@ -194,7 +194,7 @@ export async function importStockReport(
   if (report.rows.length === 0) {
     return {
       status: "error",
-      message: `None of the ${report.total} rows matched a MediBase medicine.`,
+      message: `None of the ${report.total} rows matched a NearShelf medicine.`,
     };
   }
 

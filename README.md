@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="MediBase: live medicine stock between nearby pharmacies" width="100%" />
+  <img src="docs/assets/banner.svg" alt="NearShelf: live medicine stock between nearby pharmacies" width="100%" />
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screens/home-dark.webp" />
-  <img alt="MediBase home page" src="docs/assets/screens/home-light.webp" />
+  <img alt="NearShelf home page" src="docs/assets/screens/home-light.webp" />
 </picture>
 
 <table>
@@ -65,11 +65,11 @@
 
 When a UK pharmacy can't fill a prescription because of a shortage, staff ring
 neighbouring pharmacies one by one, or hand the prescription back to the patient
-to hunt for it themselves. **MediBase** is a smart directory and communication
+to hunt for it themselves. **NearShelf** is a smart directory and communication
 bridge: pharmacies share what's on their shelves, broadcast what they need, and
 patients can see who has a hard-to-find medicine nearby.
 
-> **Demo project.** All pharmacies in the seed data are fictional. MediBase is not a
+> **Demo project.** All pharmacies in the seed data are fictional. NearShelf is not a
 > medical device and is not for clinical use.
 
 ## Contents
@@ -99,7 +99,7 @@ patients can see who has a hard-to-find medicine nearby.
 | **Request feed**             | Incoming requests sorted by open, then urgency, then distance. Tap one to reveal **Confirm we have it**.                                                                  |
 | **30-minute hold**           | Confirming holds the stock for the patient. The asking pharmacy sees the redirection steps and a live countdown. Requests close as _dispensed_, _cancelled_ or _expired_. |
 | **Handover chat**            | Text-only chat between the two pharmacies while stock is held. **Patient details are refused**, in the browser and in the database.                                       |
-| **Push notifications**       | Alerts for new requests and answers, even when MediBase is closed (installable as an app; works on iPhone from the Home Screen).                                          |
+| **Push notifications**       | Alerts for new requests and answers, even when NearShelf is closed (installable as an app; works on iPhone from the Home Screen).                                         |
 | **Show to patients**         | Choose, medicine by medicine, what appears on the public finder, and see how often patients viewed it.                                                                    |
 
 ### Patients (no account)
@@ -115,16 +115,16 @@ patients can see who has a hard-to-find medicine nearby.
 | Feature              | What it does                                                                                                                                                    |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Verified sign-up** | Staff apply with their name, **GPhC registration number** and their branch's **NHS ODS code**. The ODS code is checked against the NHS directory automatically. |
-| **Approvals**        | A manager at that pharmacy (or a MediBase admin, for a pharmacy's first member) checks the GPhC register and approves.                                          |
+| **Approvals**        | A manager at that pharmacy (or a NearShelf admin, for a pharmacy's first member) checks the GPhC register and approves.                                         |
 
 ## The legal model
 
-UK medicine supply is regulated by the MHRA, so MediBase is built around what it must **not** do.
+UK medicine supply is regulated by the MHRA, so NearShelf is built around what it must **not** do.
 
 ### Not a marketplace (the WDA rule)
 
 Pharmacies can't trade, sell or swap Prescription Only Medicines with unrelated
-pharmacies without a **Wholesale Dealer's Licence**. MediBase therefore has **no
+pharmacies without a **Wholesale Dealer's Licence**. NearShelf therefore has **no
 payments, orders or stock transfers**, anywhere.
 
 ### Visibility and redirection: move the prescription, not the medicine
@@ -135,7 +135,7 @@ payments, orders or stock transfers**, anywhere.
 4. Pharmacy A returns the electronic prescription to the **NHS Spine**.
 5. The patient goes to Pharmacy B, which downloads the prescription and dispenses it legally.
 
-MediBase shows these steps to staff at exactly the moment they need them.
+NearShelf shows these steps to staff at exactly the moment they need them.
 
 ### Guardrails enforced in the database
 
@@ -200,7 +200,7 @@ flowchart LR
 | Database     | **Supabase Postgres + PostGIS**                                           | Distance queries (`st_dwithin`) and one place for the rules.                                                                                                            |
 | Security     | **Row level security first**                                              | Rules live in the database, so they hold even if app code has a bug. `security definer` functions do the few privileged things, each with its own checks.               |
 | Live updates | **Supabase Realtime**                                                     | Search results, the request feed, chat and the header badge update without refreshing.                                                                                  |
-| Push         | **Web Push (VAPID)** + service worker                                     | Works with MediBase closed. The only use of the server's secret key is to find which devices to notify (`push_targets`, callable by nothing else).                      |
+| Push         | **Web Push (VAPID)** + service worker                                     | Works with NearShelf closed. The only use of the server's secret key is to find which devices to notify (`push_targets`, callable by nothing else).                     |
 | Maps         | **Leaflet** + OpenStreetMap                                               | Used directly (react-leaflet breaks under React 19 Strict Mode). Popups use `textContent`, so names can't inject HTML.                                                  |
 | Barcodes     | **ZXing**                                                                 | Loaded only when the scanner opens.                                                                                                                                     |
 | Styling      | **Tailwind CSS 4**                                                        | Design tokens (green and silver from the logo) in `globals.css`, with dark mode.                                                                                        |
@@ -352,7 +352,7 @@ npm run lint
 3. Broadcasts notify staff at every pharmacy in range; _Confirm we have it_ notifies the asking pharmacy.
 
 On **iPhone**, push needs the app installed: open the site in Safari, **Share → Add
-to Home Screen**, then open MediBase from the Home Screen. Notifications only ever
+to Home Screen**, then open NearShelf from the Home Screen. Notifications only ever
 contain stock details.
 
 ## Deploying

@@ -13,7 +13,7 @@ export function JoinForm() {
     return (
       <p className="flex items-start gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-900 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-100">
         <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
-        Application sent to {state.pharmacyName}. A manager there (or a MediBase admin) will check
+        Application sent to {state.pharmacyName}. A manager there (or a NearShelf admin) will check
         your GPhC registration and approve you.
       </p>
     );

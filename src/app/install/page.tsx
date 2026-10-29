@@ -6,7 +6,7 @@ import { Card, Icon, PageHeader } from "@/components/ui";
 export const metadata: Metadata = {
   title: "Install the app",
   description:
-    "Install MediBase on your phone or dispensary computer: its own icon, full screen, and notifications for nearby requests.",
+    "Install NearShelf on your phone or dispensary computer: its own icon, full screen, and notifications for nearby requests.",
 };
 
 const AFTER = [
@@ -16,7 +16,7 @@ const AFTER = [
   },
   {
     title: "Turn on notifications",
-    text: "On Requests, tap Turn on notifications, so requests reach you even when MediBase is closed.",
+    text: "On Requests, tap Turn on notifications, so requests reach you even when NearShelf is closed.",
   },
   {
     title: "Check your shelf",
@@ -29,8 +29,8 @@ export default function InstallPage() {
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
       <PageHeader
         eyebrow="Beta app"
-        title="Install MediBase"
-        description="Add MediBase to your phone or dispensary computer. It gets its own icon, opens full screen, and alerts you to requests nearby. No app store needed, and it updates itself."
+        title="Install NearShelf"
+        description="Add NearShelf to your phone or dispensary computer. It gets its own icon, opens full screen, and alerts you to requests nearby. No app store needed, and it updates itself."
       />
 
       <InstallApp />
@@ -49,7 +49,7 @@ export default function InstallPage() {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">
-          New to MediBase?{" "}
+          New to NearShelf?{" "}
           <Link href="/pharmacies" className="font-medium text-accent underline">
             See how it works for pharmacies
           </Link>

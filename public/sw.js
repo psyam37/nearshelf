@@ -1,4 +1,4 @@
-// MediBase service worker: shows push notifications, even when MediBase
+// NearShelf service worker: shows push notifications, even when NearShelf
 // isn't open, and opens the right page when one is tapped.
 // The payload shape matches PushPayload in src/lib/push.ts.
 
@@ -8,7 +8,7 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data.json();
   } catch {
-    return; // not from MediBase
+    return; // not from NearShelf
   }
   event.waitUntil(
     self.registration.showNotification(data.title, {
@@ -27,7 +27,7 @@ self.addEventListener("notificationclick", (event) => {
   const url = new URL(event.notification.data?.url || "/requests", self.location.origin).href;
   event.waitUntil(
     (async () => {
-      // Reuse an open MediBase tab if there is one.
+      // Reuse an open NearShelf tab if there is one.
       const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
       for (const client of windows) {
         if (new URL(client.url).origin === self.location.origin) {

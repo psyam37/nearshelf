@@ -25,19 +25,19 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  // Pages set just their own part, e.g. "Requests" → "Requests · MediBase".
+  // Pages set just their own part, e.g. "Requests" → "Requests · NearShelf".
   title: {
-    default: "MediBase · Find the medicine. Skip the phone calls.",
-    template: "%s · MediBase",
+    default: "NearShelf · Find the medicine. Skip the phone calls.",
+    template: "%s · NearShelf",
   },
   description:
-    "MediBase shows pharmacy teams which nearby pharmacies have a medicine in stock, live, so they can stop phoning around.",
-  applicationName: "MediBase",
+    "NearShelf shows pharmacy teams which nearby pharmacies have a medicine in stock, live, so they can stop phoning around.",
+  applicationName: "NearShelf",
   // How links look when shared (WhatsApp, iMessage, Slack, LinkedIn, email…).
   // The images come from the opengraph-image files next to each page.
   openGraph: {
     type: "website",
-    siteName: "MediBase",
+    siteName: "NearShelf",
     locale: "en_GB",
   },
   twitter: { card: "summary_large_image" },

@@ -45,7 +45,7 @@ export function PublicFinder() {
       .then((response) => setResult({ forUrl: url, response }))
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setResult({ forUrl: url, response: { error: "Couldn't reach MediBase. Try again." } });
+        setResult({ forUrl: url, response: { error: "Couldn't reach NearShelf. Try again." } });
       });
     return () => controller.abort();
   }, [url]);

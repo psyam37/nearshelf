@@ -1,4 +1,4 @@
-// MediBase never handles patient data (GDPR special category). The handover
+// NearShelf never handles patient data (GDPR special category). The handover
 // chat is the one place someone could type it, so messages are checked:
 // here first, for an instant explanation, and again by the database
 // (contains_patient_details), which has the final say. Keep the two in step.

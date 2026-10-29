@@ -12,7 +12,7 @@ export function ReviewButtons({ applicationId }: { applicationId: string }) {
   if (state.status === "reviewed") {
     return (
       <p className="text-sm font-semibold text-accent">
-        {state.decision === "approved" ? "Approved: they can now use MediBase." : "Rejected."}
+        {state.decision === "approved" ? "Approved: they can now use NearShelf." : "Rejected."}
       </p>
     );
   }

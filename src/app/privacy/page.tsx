@@ -4,7 +4,7 @@ import { Card, PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Privacy notice",
-  description: "What MediBase stores, why, and what it never stores.",
+  description: "What NearShelf stores, why, and what it never stores.",
 };
 
 const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
       <PageHeader
         eyebrow="Privacy"
         title="Privacy notice"
-        description="MediBase is built to need as little personal data as possible. Here is exactly what it keeps."
+        description="NearShelf is built to need as little personal data as possible. Here is exactly what it keeps."
       />
 
       <Card className="mb-8 p-5 text-sm">
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
       <div className="space-y-8">
         <Section title="Who we are">
           <p>
-            MediBase is a pilot service connecting community pharmacies so they can see medicine
+            NearShelf is a pilot service connecting community pharmacies so they can see medicine
             availability and redirect prescriptions during shortages.
             {CONTACT ? (
               <>
@@ -56,19 +56,19 @@ export default function PrivacyPage() {
 
         <Section title="Patients and the public">
           <p>
-            You can search MediBase without an account. We use your postcode or location only to run
-            that search, then discard it. We keep an anonymous daily count of how often each
+            You can search NearShelf without an account. We use your postcode or location only to
+            run that search, then discard it. We keep an anonymous daily count of how often each
             pharmacy&apos;s listing appeared in searches, never who searched.
           </p>
           <p>
-            MediBase never asks for, stores or passes on information about patients or their
+            NearShelf never asks for, stores or passes on information about patients or their
             prescriptions. Pharmacy staff are told not to include it, and messages that look like
             patient details (such as NHS numbers or dates of birth) are refused automatically.
           </p>
         </Section>
 
         <Section title="Pharmacy staff">
-          <p>To verify that only registered pharmacy professionals use MediBase, we keep:</p>
+          <p>To verify that only registered pharmacy professionals use NearShelf, we keep:</p>
           <ul className="list-disc space-y-1 pl-5">
             <li>your email address, to sign you in;</li>
             <li>your name and GPhC registration number, to verify you;</li>

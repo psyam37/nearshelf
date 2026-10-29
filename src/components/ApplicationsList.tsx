@@ -8,7 +8,7 @@ const GPHC_REGISTER_URL = "https://www.pharmacyregulation.org/registers";
 
 /**
  * Pending staff applications: for one pharmacy (managers), or all of them
- * (MediBase admins). Row level security decides which rows come back.
+ * (NearShelf admins). Row level security decides which rows come back.
  */
 export async function ApplicationsList({ pharmacyId }: { pharmacyId?: string }) {
   const supabase = await createClient();

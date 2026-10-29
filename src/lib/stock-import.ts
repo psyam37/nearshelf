@@ -1,5 +1,5 @@
 // Reading a stock report exported from a PMR (ProScript Connect, Titan and
-// others) and turning it into MediBase stock levels. Every PMR lays its CSV
+// others) and turning it into NearShelf stock levels. Every PMR lays its CSV
 // out a little differently, so this looks for familiar column names instead
 // of one fixed format. Pure functions: no database, easy to test.
 import { normaliseScannedCode } from "@/lib/gtin";

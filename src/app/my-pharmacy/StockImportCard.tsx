@@ -59,7 +59,7 @@ export function StockImportCard({ pharmacyId }: { pharmacyId: string }) {
           </p>
           {state.unmatched.length > 0 && (
             <p className="mt-1 text-xs">
-              Not on MediBase yet: {state.unmatched.join(", ")}
+              Not on NearShelf yet: {state.unmatched.join(", ")}
               {state.total - state.updated > state.unmatched.length ? "…" : ""}
             </p>
           )}

@@ -56,8 +56,8 @@ export default function Home() {
               Find the medicine. <span className="text-silver">Skip the phone calls.</span>
             </h1>
             <p className="mt-5 max-w-lg text-lg text-muted">
-              When a prescription can’t be filled, MediBase shows which pharmacies nearby have it in
-              stock, and lets you ask them to confirm in one tap.
+              When a prescription can’t be filled, NearShelf shows which pharmacies nearby have it
+              in stock, and lets you ask them to confirm in one tap.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/search" className={`${button.primary} px-5 py-3 text-base`}>

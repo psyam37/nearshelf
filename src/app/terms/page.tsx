@@ -4,7 +4,7 @@ import { Card, PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Terms of use",
-  description: "The rules for using MediBase, for pharmacies and patients.",
+  description: "The rules for using NearShelf, for pharmacies and patients.",
 };
 
 function Rule({ title, children }: { title: string; children: ReactNode }) {
@@ -22,25 +22,25 @@ export default function TermsPage() {
       <PageHeader
         eyebrow="Terms"
         title="Terms of use"
-        description="MediBase is a pilot. These terms keep it safe, legal and useful for everyone."
+        description="NearShelf is a pilot. These terms keep it safe, legal and useful for everyone."
       />
 
       <Card className="mb-8 border-amber-300/60 bg-amber-50 p-5 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <p className="font-semibold">Not for emergencies or medical advice</p>
         <p className="mt-1">
-          MediBase shows what pharmacies report about their stock. It isn&apos;t a medical device
+          NearShelf shows what pharmacies report about their stock. It isn&apos;t a medical device
           and doesn&apos;t give medical advice. In an emergency call 999; for urgent advice, NHS
           111.
         </p>
       </Card>
 
       <div className="space-y-8">
-        <Rule title="What MediBase is, and isn't">
+        <Rule title="What NearShelf is, and isn't">
           <p>
-            MediBase helps pharmacies see where a medicine is available, so a patient&apos;s
+            NearShelf helps pharmacies see where a medicine is available, so a patient&apos;s
             prescription can be dispensed by a pharmacy that has it. It is not a marketplace: there
             are no sales, orders, payments or transfers of medicines between businesses through
-            MediBase, and you must not use it to arrange them.
+            NearShelf, and you must not use it to arrange them.
           </p>
         </Rule>
 
@@ -70,7 +70,7 @@ export default function TermsPage() {
 
         <Rule title="For patients">
           <p>
-            Availability shown on MediBase may have changed. Always call the pharmacy before you
+            Availability shown on NearShelf may have changed. Always call the pharmacy before you
             travel. Your prescription still needs to be sent to, or released for, that pharmacy by
             your GP surgery or current pharmacy.
           </p>
@@ -79,14 +79,14 @@ export default function TermsPage() {
         <Rule title="Accounts and access">
           <p>
             We may suspend accounts that break these terms, misuse the service, or whose
-            registration can&apos;t be verified. Pharmacy managers and MediBase admins approve who
+            registration can&apos;t be verified. Pharmacy managers and NearShelf admins approve who
             can join each pharmacy.
           </p>
         </Rule>
 
         <Rule title="The pilot">
           <p>
-            MediBase is provided free during the pilot, as it is, while we improve it. We work hard
+            NearShelf is provided free during the pilot, as it is, while we improve it. We work hard
             to keep it available and accurate but can&apos;t guarantee either. We may change these
             terms; we&apos;ll tell pharmacies about significant changes.
           </p>

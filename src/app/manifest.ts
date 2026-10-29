@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 
-// Lets MediBase be installed to a phone's home screen like an app, which
+// Lets NearShelf be installed to a phone's home screen like an app, which
 // iPhones require before they'll show push notifications.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MediBase",
-    short_name: "MediBase",
+    name: "NearShelf",
+    short_name: "NearShelf",
     description: "Live medicine stock between nearby pharmacies.",
     start_url: "/requests",
     display: "standalone",

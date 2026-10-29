@@ -105,14 +105,14 @@ async function Insights() {
       <PageHeader
         eyebrow="Beta preview"
         title="Insights"
-        description={`Demand and shortage signals around ${pharmacy.name}, from your MediBase activity and public NHS data.`}
+        description={`Demand and shortage signals around ${pharmacy.name}, from your NearShelf activity and public NHS data.`}
       />
       <div className="space-y-12">
         <YourPharmacy own={ownSchema.parse(own.data)} />
         {byMedicine.size === 0 ? (
           <Card className="p-6">
             <EmptyState icon="inbox">
-              NHS data hasn&apos;t been loaded yet. A MediBase admin can load it from Admin → NHS
+              NHS data hasn&apos;t been loaded yet. A NearShelf admin can load it from Admin → NHS
               data for Insights.
             </EmptyState>
           </Card>
@@ -132,7 +132,7 @@ async function Insights() {
         <p className="text-xs text-muted">
           Sources: NHSBSA Prescription Cost Analysis, items dispensed in the community, published
           about two months after each month ends (Open Government Licence v3.0); Community Pharmacy
-          England price concessions; your MediBase activity over the last 30 days.
+          England price concessions; your NearShelf activity over the last 30 days.
         </p>
       </div>
     </>
@@ -157,7 +157,7 @@ function Stat({ label, value, detail }: { label: string; value: string; detail: 
 function YourPharmacy({ own }: { own: Own }) {
   return (
     <section>
-      <SectionTitle eyebrow="Phase 1 · From MediBase" title="Your pharmacy, last 30 days" />
+      <SectionTitle eyebrow="Phase 1 · From NearShelf" title="Your pharmacy, last 30 days" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Unmet requests nearby"
@@ -170,7 +170,7 @@ function YourPharmacy({ own }: { own: Own }) {
           detail={
             own.network_avg_response_minutes === null
               ? "No answers yet"
-              : `MediBase average ${own.network_avg_response_minutes} min`
+              : `NearShelf average ${own.network_avg_response_minutes} min`
           }
         />
         <Stat
@@ -381,7 +381,7 @@ function ShortageSignals({
             </a>
           </Card>
           <Card className="p-5">
-            <h3 className="font-semibold">In the MediBase catalogue</h3>
+            <h3 className="font-semibold">In the NearShelf catalogue</h3>
             {ours.length === 0 ? (
               <p className="mt-3 text-sm text-muted">None this month or last.</p>
             ) : (
@@ -474,7 +474,7 @@ function ComingNext() {
             Days of stock left, and stock that isn&apos;t moving
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Upload your PMR stock report regularly, and MediBase will work out how fast each item
+            Upload your PMR stock report regularly, and NearShelf will work out how fast each item
             goes, estimate the days left, and suggest reordering before local demand runs you out.
           </p>
         </div>

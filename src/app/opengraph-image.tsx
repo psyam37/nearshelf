@@ -1,6 +1,6 @@
 import { OG_SIZE, ogCard } from "@/lib/og-card";
 
-export const alt = "MediBase: live medicine stock between nearby pharmacies";
+export const alt = "NearShelf: live medicine stock between nearby pharmacies";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 

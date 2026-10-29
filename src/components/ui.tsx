@@ -65,7 +65,7 @@ export function Icon({ name, className = "h-5 w-5" }: { name: IconName; classNam
 
 /* ------------------------------------------------------------------- logo */
 
-/** The MediBase mark: a cross in a rounded square, on the logo's green. */
+/** The NearShelf mark: a cross in a rounded square, on the logo's green. */
 export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <svg viewBox="0 0 512 512" aria-hidden className={className}>
@@ -89,7 +89,7 @@ export function Logo() {
     <span className="flex items-center gap-2.5">
       <LogoMark />
       <span className="text-[17px] font-semibold tracking-tight">
-        Medi<span className="text-brand-700 dark:text-brand-300">Base</span>
+        Near<span className="text-brand-700 dark:text-brand-300">Shelf</span>
       </span>
     </span>
   );

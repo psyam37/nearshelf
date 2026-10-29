@@ -1,5 +1,5 @@
 // The designed card that chat apps, email and social sites show when a
-// MediBase link is shared (Open Graph image). Rendered by next/og, which
+// NearShelf link is shared (Open Graph image). Rendered by next/og, which
 // supports flexbox and a subset of CSS: every element with several children
 // needs display: flex.
 import { ImageResponse } from "next/og";
@@ -66,7 +66,7 @@ export function ogCard({ eyebrow, title, accent, subtitle, rows, toast }: OgCard
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <img src={LOGO} width={72} height={72} alt="" />
           <div style={{ display: "flex", fontSize: 40, fontWeight: 700, letterSpacing: -1 }}>
-            Medi<span style={{ color: "#c9d1ce" }}>Base</span>
+            Near<span style={{ color: "#c9d1ce" }}>Shelf</span>
           </div>
         </div>
         <div
@@ -192,7 +192,7 @@ export function ogCard({ eyebrow, title, accent, subtitle, rows, toast }: OgCard
           <img src={LOGO} width={52} height={52} alt="" />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: "#93a39c", letterSpacing: 1 }}>
-              MEDIBASE · NOW
+              NEARSHELF · NOW
             </span>
             <span style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>{toast.title}</span>
             <span style={{ fontSize: 17, color: "#d9efe2", marginTop: 2 }}>{toast.body}</span>

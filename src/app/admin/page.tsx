@@ -32,7 +32,7 @@ async function AdminContent() {
   return (
     <>
       <PageHeader
-        eyebrow="MediBase admin"
+        eyebrow="NearShelf admin"
         title="Admin"
         description="Demo tools for pitches, onboarding real pharmacies, NHS data, and staff applications."
       />

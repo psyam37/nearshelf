@@ -17,7 +17,7 @@ export function SiteFooter() {
         <p className="flex items-center gap-2.5">
           <LogoMark className="h-6 w-6" />
           <span>
-            <span className="font-semibold text-ink">MediBase</span> · Pilot. Demo pharmacies are
+            <span className="font-semibold text-ink">NearShelf</span> · Pilot. Demo pharmacies are
             fictional. Not for emergencies or medical advice.
           </span>
         </p>

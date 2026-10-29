@@ -129,10 +129,10 @@ export function NotificationToggle() {
         {message ??
           {
             on: "This device is alerted to requests nearby. Tap to turn off.",
-            off: "Get alerted to requests nearby, even when MediBase is closed.",
+            off: "Get alerted to requests nearby, even when NearShelf is closed.",
             blocked: "Notifications are blocked. Allow them in your browser settings.",
             "needs-install":
-              "On iPhone, tap Share → Add to Home Screen, then open MediBase from there.",
+              "On iPhone, tap Share → Add to Home Screen, then open NearShelf from there.",
             unsupported: "This browser can't show notifications.",
           }[status]}
       </p>

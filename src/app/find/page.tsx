@@ -22,7 +22,7 @@ export default function FindPage() {
         <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
           Not for emergencies: call <strong>999</strong>, or <strong>NHS 111</strong> for urgent
-          advice. MediBase shows what pharmacies report, not medical advice.
+          advice. NearShelf shows what pharmacies report, not medical advice.
         </span>
       </p>
 

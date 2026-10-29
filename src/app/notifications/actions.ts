@@ -56,8 +56,8 @@ export async function sendTestNotification(): Promise<PushActionResult> {
   if (error) return { ok: false, message: "Couldn't load your devices." };
 
   const sent = await sendToTargets(data, {
-    title: "MediBase notifications are on",
-    body: "You'll hear about stock requests from pharmacies nearby, even when MediBase is closed.",
+    title: "NearShelf notifications are on",
+    body: "You'll hear about stock requests from pharmacies nearby, even when NearShelf is closed.",
     url: "/requests",
     tag: "test",
   });

@@ -1,5 +1,5 @@
 "use server";
-// MediBase admin tools. Every action checks the admin flag here, and the
+// NearShelf admin tools. Every action checks the admin flag here, and the
 // database functions check it again.
 
 import { refresh } from "next/cache";
@@ -26,7 +26,7 @@ export type AdminState =
 
 async function requireAdmin(): Promise<string | null> {
   if (!(await getCurrentUser())) return "Please sign in again.";
-  if (!(await isPlatformAdmin())) return "Only MediBase admins can do this.";
+  if (!(await isPlatformAdmin())) return "Only NearShelf admins can do this.";
   return null;
 }
 
@@ -145,7 +145,7 @@ export async function addPharmacy(_prev: AdminState, formData: FormData): Promis
   refresh();
   return {
     status: "done",
-    message: `${found.name} is on MediBase. Its staff can now join with ODS code ${found.odsCode}.`,
+    message: `${found.name} is on NearShelf. Its staff can now join with ODS code ${found.odsCode}.`,
   };
 }
 

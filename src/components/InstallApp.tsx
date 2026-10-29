@@ -1,5 +1,5 @@
 "use client";
-// The /install page: a one-tap "Install MediBase" button where the browser
+// The /install page: a one-tap "Install NearShelf" button where the browser
 // allows it (Chrome and Edge, on Android and computers), and step-by-step help
 // for everything else (Safari on iPhone has no install button for websites).
 
@@ -64,7 +64,7 @@ const GUIDES: {
       "Tap ⋮ at the top right.",
       "Tap Install app (or Add to Home screen), then Install.",
     ],
-    note: "MediBase appears with your other apps.",
+    note: "NearShelf appears with your other apps.",
   },
   {
     platform: "desktop",
@@ -73,7 +73,7 @@ const GUIDES: {
     steps: [
       "Open this page in Chrome or Edge.",
       "Click the install icon at the right end of the address bar.",
-      "Click Install. MediBase opens in its own window.",
+      "Click Install. NearShelf opens in its own window.",
     ],
     note: "Pin it to the taskbar next to your PMR. Safari on a Mac: File → Add to Dock.",
   },
@@ -127,14 +127,14 @@ export function InstallApp() {
             </span>
             {installed
               ? "You're using the installed app. Updates arrive by themselves."
-              : "Installed. Open MediBase from your home screen or apps."}
+              : "Installed. Open NearShelf from your home screen or apps."}
           </p>
         ) : (
           <>
             <div>
               <p className="font-semibold">
                 {installPrompt
-                  ? "MediBase is ready to install on this device."
+                  ? "NearShelf is ready to install on this device."
                   : platform === "ios"
                     ? "On iPhone and iPad, install from Safari's Share menu."
                     : "Install from your browser's menu."}
@@ -148,7 +148,7 @@ export function InstallApp() {
             {installPrompt && (
               <button type="button" onClick={install} className={button.primary}>
                 <Icon name="download" className="h-4 w-4" />
-                Install MediBase
+                Install NearShelf
               </button>
             )}
           </>
