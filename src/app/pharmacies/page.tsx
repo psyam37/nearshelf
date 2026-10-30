@@ -93,7 +93,7 @@ const FAQS: { q: string; a: ReactNode }[] = [
   },
   {
     q: "Will competitors see all my stock?",
-    a: "Only signed-in, GPhC-verified pharmacy staff see stock levels, and only as In stock / Low / Out, never quantities. The public only sees medicines you choose to list.",
+    a: "Only signed-in, GPhC-verified pharmacy staff see stock levels, and only as In stock / Low / Out, never quantities. Verified pharmacists at GP practices can see them too, so they send patients to you first; you can switch that off. The public only sees medicines you choose to list.",
   },
   {
     q: "What about controlled drugs?",

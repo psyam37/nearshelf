@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ApplicationsList } from "@/components/ApplicationsList";
+import { ClinicianApplicationsList } from "@/components/ClinicianApplicationsList";
 import { ListSkeleton, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { isPlatformAdmin } from "@/lib/pharmacy";
@@ -34,7 +35,7 @@ async function AdminContent() {
       <PageHeader
         eyebrow="NearShelf admin"
         title="Admin"
-        description="Demo tools for pitches, onboarding real pharmacies, NHS data, and staff applications."
+        description="Demo tools for pitches, onboarding real pharmacies, NHS data, and applications to approve."
       />
       <div className="space-y-4">
         <RefreshDemoCard />
@@ -43,10 +44,16 @@ async function AdminContent() {
       </div>
       <h2 className="mt-10 mb-1 text-lg font-semibold">Staff applications</h2>
       <p className="mb-3 text-sm text-muted">
-        Usually a pharmacy&apos;s managers approve their own staff; you approve the first member of
-        a pharmacy, which has no manager yet.
+        You approve the first member of a pharmacy, who becomes its manager. From then on its
+        managers approve their own staff.
       </p>
       <ApplicationsList />
+      <h2 className="mt-10 mb-1 text-lg font-semibold">GP practice and other pharmacists</h2>
+      <p className="mb-3 text-sm text-muted">
+        View-only access to stock, for pharmacists outside community pharmacy. Only you approve
+        these.
+      </p>
+      <ClinicianApplicationsList />
     </>
   );
 }

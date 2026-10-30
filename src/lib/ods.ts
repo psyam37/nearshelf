@@ -7,8 +7,9 @@ import { z } from "zod";
 /** Upper-case letters and digits, as ODS codes are written. */
 export const ODS_CODE_PATTERN = /^[A-Z0-9]{3,10}$/;
 
-/** The ODS role id for "Pharmacy". */
+/** The ODS role ids for "Pharmacy" and "GP practice". */
 const PHARMACY_ROLE = "RO182";
+const GP_PRACTICE_ROLE = "RO76";
 
 // Only the fields we use, checked: data from another service is untrusted.
 const ordResponseSchema = z.object({
@@ -22,6 +23,9 @@ const ordResponseSchema = z.object({
           .partial(),
       })
       .optional(),
+    Contacts: z
+      .object({ Contact: z.array(z.object({ type: z.string(), value: z.string() })) })
+      .optional(),
     Roles: z.object({ Role: z.array(z.object({ id: z.string() })) }),
   }),
 });
@@ -33,8 +37,10 @@ export type NhsOdsLookup =
       addressLine: string | null;
       town: string | null;
       postcode: string | null;
+      phone: string | null;
       active: boolean;
       isPharmacy: boolean;
+      isGpPractice: boolean;
     }
   | { found: false };
 
@@ -64,7 +70,9 @@ export async function lookupNhsOds(code: string): Promise<NhsOdsLookup> {
     addressLine: location?.AddrLn1 ?? null,
     town: location?.Town ?? null,
     postcode: location?.PostCode ?? null,
+    phone: org.Contacts?.Contact.find((contact) => contact.type === "tel")?.value ?? null,
     active: org.Status === "Active",
     isPharmacy: org.Roles.Role.some((role) => role.id === PHARMACY_ROLE),
+    isGpPractice: org.Roles.Role.some((role) => role.id === GP_PRACTICE_ROLE),
   };
 }

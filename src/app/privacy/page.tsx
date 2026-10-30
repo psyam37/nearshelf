@@ -67,19 +67,23 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="Pharmacy staff">
+        <Section title="Pharmacy staff and pharmacists">
           <p>To verify that only registered pharmacy professionals use NearShelf, we keep:</p>
           <ul className="list-disc space-y-1 pl-5">
             <li>your email address, to sign you in;</li>
             <li>your name and GPhC registration number, to verify you;</li>
-            <li>which pharmacy you work at, and your role there;</li>
+            <li>
+              which pharmacy you work at and your role there, or, for pharmacists outside community
+              pharmacy, your workplace and its postcode;
+            </li>
             <li>the stock updates, requests and handover messages you make, with times;</li>
             <li>if you turn on notifications, a technical address for your device.</li>
           </ul>
           <p>
             We use this to run the service (our legitimate interest in providing it, and the
-            contract with your pharmacy). Stock levels are visible to other verified pharmacy staff;
-            your pharmacy chooses what, if anything, is shown to the public.
+            contract with your pharmacy). Stock levels are visible to other verified pharmacy staff
+            and, unless your pharmacy turns it off, to verified pharmacists at GP practices; your
+            pharmacy chooses what, if anything, is shown to the public.
           </p>
         </Section>
 

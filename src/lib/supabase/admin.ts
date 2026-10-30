@@ -1,6 +1,7 @@
 // Supabase client with the SECRET key: it ignores row level security. Used
-// for exactly one thing: finding which devices to send push notifications
-// to, which means reading other people's subscriptions. `server-only` makes
+// for two things: finding which devices to send push notifications to, which
+// means reading other people's subscriptions, and adding a real pharmacy
+// from the NHS directory when its first member applies. `server-only` makes
 // the build fail if browser code ever imports this file.
 import "server-only";
 import { createClient } from "@supabase/supabase-js";

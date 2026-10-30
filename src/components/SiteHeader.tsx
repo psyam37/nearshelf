@@ -5,7 +5,7 @@ import { NavLink } from "@/components/NavLink";
 import { RequestsLink } from "@/components/RequestsLink";
 import { Icon, Logo, button } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
-import { getMyPharmacy, isPlatformAdmin } from "@/lib/pharmacy";
+import { getClinicianApplication, getMyPharmacy, isPlatformAdmin } from "@/lib/pharmacy";
 import { createClient } from "@/lib/supabase/server";
 
 export function SiteHeader() {
@@ -49,6 +49,8 @@ async function AccountLinks() {
   }
 
   const [pharmacy, admin] = await Promise.all([getMyPharmacy(), isPlatformAdmin()]);
+  // GP practice and locum pharmacists have no pharmacy: their page is their access.
+  const clinician = pharmacy ? null : await getClinicianApplication(user.id);
   let pendingCount = 0;
   if (pharmacy) {
     const supabase = await createClient();
@@ -67,10 +69,17 @@ async function AccountLinks() {
         <Icon name="search" className="h-[18px] w-[18px]" />
         <span className="hidden sm:inline">Search</span>
       </NavLink>
-      <NavLink href="/my-pharmacy">
-        <Icon name="store" className="h-[18px] w-[18px]" />
-        <span className="hidden sm:inline">My pharmacy</span>
-      </NavLink>
+      {clinician?.status === "approved" ? (
+        <NavLink href="/join/clinician">
+          <Icon name="shield" className="h-[18px] w-[18px]" />
+          <span className="hidden sm:inline">My access</span>
+        </NavLink>
+      ) : (
+        <NavLink href="/my-pharmacy">
+          <Icon name="store" className="h-[18px] w-[18px]" />
+          <span className="hidden sm:inline">My pharmacy</span>
+        </NavLink>
+      )}
       {pharmacy && (
         <NavLink href="/insights">
           <Icon name="chart" className="h-[18px] w-[18px]" />

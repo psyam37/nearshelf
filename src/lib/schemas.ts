@@ -65,18 +65,37 @@ export type BroadcastInput = z.infer<typeof broadcastSchema>;
 
 // Applying to join a pharmacy. Spaces are removed and letters upper-cased
 // first, so "fa 076" and "123 4567" are accepted as typed.
-export const joinSchema = z.object({
-  fullName: z.string().trim().min(2, "Enter your full name").max(100),
-  gphcNumber: z
-    .string()
-    .transform((s) => s.replace(/\s/g, ""))
-    .pipe(z.string().regex(/^\d{7}$/, "A GPhC registration number is 7 digits")),
-  odsCode: z
+const fullName = z.string().trim().min(2, "Enter your full name").max(100);
+const gphcNumber = z
+  .string()
+  .transform((s) => s.replace(/\s/g, ""))
+  .pipe(z.string().regex(/^\d{7}$/, "A GPhC registration number is 7 digits"));
+const odsCode = (example: string) =>
+  z
     .string()
     .transform((s) => s.replace(/\s/g, "").toUpperCase())
-    .pipe(z.string().regex(/^[A-Z0-9]{3,10}$/, "Enter your pharmacy's ODS code, e.g. FA123")),
-});
+    .pipe(z.string().regex(/^[A-Z0-9]{3,10}$/, `Enter the ODS code, e.g. ${example}`));
+
+export const joinSchema = z.object({ fullName, gphcNumber, odsCode: odsCode("FA123") });
 export type JoinInput = z.infer<typeof joinSchema>;
+
+// Pharmacists outside community pharmacy: at a GP practice (checked against
+// the NHS directory), or anywhere else, e.g. a locum, in their own words.
+export const clinicianJoinSchema = z.discriminatedUnion("setting", [
+  z.object({ setting: z.literal("gp_practice"), fullName, gphcNumber, odsCode: odsCode("C84023") }),
+  z.object({
+    setting: z.literal("other"),
+    fullName,
+    gphcNumber,
+    workplace: z.string().trim().min(2, "Tell us where you work").max(120),
+    postcode: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/, "Enter a UK postcode, e.g. NG1 5FS"),
+  }),
+]);
+export type ClinicianJoinInput = z.infer<typeof clinicianJoinSchema>;
 
 // The public finder (no sign-in). Same miles as broadcasts.
 export const publicFindSchema = z.object({

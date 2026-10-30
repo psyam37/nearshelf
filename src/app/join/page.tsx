@@ -84,6 +84,13 @@ async function JoinContent() {
       <Card className="p-6">
         <JoinForm />
       </Card>
+      <p className="rounded-xl border border-line bg-surface p-4 text-sm text-muted">
+        Not in a community pharmacy? Pharmacists at GP practices, and locums, can{" "}
+        <Link href="/join/clinician" className="font-semibold text-accent underline">
+          register to search stock
+        </Link>{" "}
+        instead.
+      </p>
       <p className="text-xs text-muted">
         We store your name and GPhC number so your pharmacy can verify you. We never ask for or
         store patient information.

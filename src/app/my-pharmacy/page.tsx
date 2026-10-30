@@ -8,6 +8,7 @@ import { requireUser, type CurrentUser } from "@/lib/auth";
 import { STOCK_LABELS, UNVERIFIED_AFTER_HOURS, formatUpdatedAgo, isVerified } from "@/lib/stock";
 import { createClient } from "@/lib/supabase/server";
 import type { StockLevel } from "@/lib/types";
+import { ClinicianSharingToggle } from "./ClinicianSharingToggle";
 import { PublicToggle } from "./PublicToggle";
 import { ReconfirmAllButton } from "./ReconfirmAllButton";
 import { StockImportCard } from "./StockImportCard";
@@ -36,7 +37,7 @@ async function MyPharmacy() {
   // generated types know the shape of the result.
   const { data: memberships, error } = await supabase
     .from("pharmacy_staff")
-    .select("role, pharmacy:pharmacies(id, name, address_line, postcode)");
+    .select("role, pharmacy:pharmacies(id, name, address_line, postcode, share_with_clinicians)");
 
   if (error) throw error; // shown by the error page
   if (memberships.length === 0) return <NotLinkedYet user={user} />;
@@ -51,7 +52,13 @@ async function MyPharmacy() {
 }
 
 interface PharmacyStockProps {
-  pharmacy: { id: string; name: string; address_line: string; postcode: string };
+  pharmacy: {
+    id: string;
+    name: string;
+    address_line: string;
+    postcode: string;
+    share_with_clinicians: boolean;
+  };
   role: string;
 }
 
@@ -178,6 +185,21 @@ async function PharmacyStock({ pharmacy, role }: PharmacyStockProps) {
         </Card>
       </section>
 
+      <section className="mt-10">
+        <h2 className="mb-1 text-lg font-semibold">Shown to GP practices</h2>
+        <p className="mb-3 text-sm text-muted">
+          Pharmacists at GP practices, and locums, can register with their GPhC number to see which
+          pharmacies have a medicine, so they can send patients and prescriptions to you first. They
+          can&apos;t change stock or send requests.
+        </p>
+        <Card className="p-5">
+          <ClinicianSharingToggle
+            pharmacyId={pharmacy.id}
+            shared={pharmacy.share_with_clinicians}
+          />
+        </Card>
+      </section>
+
       <div className="mt-10">
         <StockImportCard pharmacyId={pharmacy.id} />
       </div>
@@ -258,10 +280,15 @@ function NotLinkedYet({ user }: { user: CurrentUser }) {
           </>
         }
       />
-      <Link href="/join" className={button.primary}>
-        Join your pharmacy
-        <Icon name="arrow" className="h-4 w-4" />
-      </Link>
+      <div className="flex flex-wrap gap-2">
+        <Link href="/join" className={button.primary}>
+          Join your pharmacy
+          <Icon name="arrow" className="h-4 w-4" />
+        </Link>
+        <Link href="/join/clinician" className={button.secondary}>
+          I work at a GP practice or as a locum
+        </Link>
+      </div>
     </section>
   );
 }

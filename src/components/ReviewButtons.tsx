@@ -4,8 +4,14 @@ import { useActionState } from "react";
 import { reviewApplication, type ReviewState } from "@/app/join/actions";
 import { Icon, button } from "@/components/ui";
 
-export function ReviewButtons({ applicationId }: { applicationId: string }) {
-  const [state, formAction, pending] = useActionState<ReviewState, FormData>(reviewApplication, {
+interface ReviewButtonsProps {
+  applicationId: string;
+  /** Which kind of application: staff (the default) or clinician. */
+  action?: (prev: ReviewState, formData: FormData) => Promise<ReviewState>;
+}
+
+export function ReviewButtons({ applicationId, action = reviewApplication }: ReviewButtonsProps) {
+  const [state, formAction, pending] = useActionState<ReviewState, FormData>(action, {
     status: "idle",
   });
 

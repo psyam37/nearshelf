@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Icon, button, input } from "@/components/ui";
 import { applyToJoin, withdrawApplication, type JoinState } from "./actions";
@@ -54,6 +55,14 @@ export function JoinForm() {
       {state.status === "error" && (
         <p className="rounded-xl bg-rose-50 p-3 text-sm text-rose-800 dark:bg-rose-950 dark:text-rose-200">
           {state.message}
+          {state.link && (
+            <>
+              {" "}
+              <Link href={state.link.href} className="font-semibold underline">
+                {state.link.label}
+              </Link>
+            </>
+          )}
         </p>
       )}
       <button type="submit" disabled={pending} className={`${button.primary} w-full py-3`}>

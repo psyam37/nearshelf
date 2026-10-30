@@ -112,10 +112,11 @@ patients can see who has a hard-to-find medicine nearby.
 
 ### Managers and admins
 
-| Feature              | What it does                                                                                                                                                    |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Verified sign-up** | Staff apply with their name, **GPhC registration number** and their branch's **NHS ODS code**. The ODS code is checked against the NHS directory automatically. |
-| **Approvals**        | A manager at that pharmacy (or a NearShelf admin, for a pharmacy's first member) checks the GPhC register and approves.                                         |
+| Feature                     | What it does                                                                                                                                                                                                     |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Verified sign-up**        | Staff apply with their name, **GPhC registration number** and their branch's **NHS ODS code**. Any active pharmacy in the NHS directory can join: the first time someone applies, it's added from its NHS entry. |
+| **Approvals**               | A NearShelf admin approves a pharmacy's first member, who becomes its **manager**. From then on, its managers check the GPhC register and approve their own staff.                                               |
+| **GP practices and locums** | Pharmacists outside community pharmacy register with their GPhC number (and their GP practice's ODS code) for **view-only** stock search. Admins approve them, and each pharmacy can switch this off.            |
 
 ## The legal model
 
@@ -144,6 +145,7 @@ NearShelf shows these steps to staff at exactly the moment they need them.
 | **No patient data**                      | Requests hold stock details only. Chat messages that look like an NHS number, date of birth, postcode or phone number are rejected by a database trigger (`contains_patient_details`). |
 | **Staff only change their own pharmacy** | Row level security (`is_staff_of`) on every write.                                                                                                                                     |
 | **Verified staff only**                  | Joining a pharmacy needs an approved application (`review_staff_application`).                                                                                                         |
+| **Stock is for verified people**         | Only pharmacy staff, admins and approved clinicians can read stock levels (`can_see_stock`); clinicians only see pharmacies that share with them, and can't change anything.           |
 | **Controlled drugs never public**        | They can't be listed publicly, and the public search refuses them (theft risk).                                                                                                        |
 | **Honest stock**                         | Unverified (older than 2 hours) stock ranks lower for staff and is hidden from the public.                                                                                             |
 
@@ -328,12 +330,13 @@ raising an "error" whose message is the list of results.
 2. Paste a test file into the **SQL Editor** and run it.
 3. Read the message: every line should end in **PASS**.
 
-| File                                  | Checks                                                                                                                                          |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `verified_reserve_broadcast.sql` (11) | 2-hour verification and ranking, Still in stock, broadcasts reach the right pharmacies, no duplicates, the 30-minute hold, answers can't change |
-| `staff_applications.sql` (14)         | Applications start pending, one per person, GPhC numbers used once, privacy, only managers/admins review, never your own                        |
-| `request_lifecycle_and_chat.sql` (17) | Urgent sorted first, chat signed by the right pharmacy, **patient details refused**, closing rules, 2-hour expiry, closing broadcasts           |
-| `public_listings.sql` (11)            | Only listed stock is public, **controlled drugs never**, old or out-of-stock hidden, anonymous view counts stay private                         |
+| File                                  | Checks                                                                                                                                             |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `verified_reserve_broadcast.sql` (11) | 2-hour verification and ranking, Still in stock, broadcasts reach the right pharmacies, no duplicates, the 30-minute hold, answers can't change    |
+| `staff_applications.sql` (14)         | Applications start pending, one per person, GPhC numbers used once, privacy, only managers/admins review, never your own                           |
+| `request_lifecycle_and_chat.sql` (17) | Urgent sorted first, chat signed by the right pharmacy, **patient details refused**, closing rules, 2-hour expiry, closing broadcasts              |
+| `public_listings.sql` (11)            | Only listed stock is public, **controlled drugs never**, old or out-of-stock hidden, anonymous view counts stay private                            |
+| `open_signup_and_clinicians.sql` (13) | Clinicians start pending, see no stock until approved, then only from sharing pharmacies; only the server adds pharmacies; first member is manager |
 
 App code checks:
 
@@ -424,8 +427,8 @@ The full plan, the release history (v0.1.0 to v0.8.0) and how the branches work 
 
 ### Known limitations
 
-- **Demo data.** Real use needs real pharmacies (onboarded via their ODS code) and the
-  full NHS **dm+d** medicines catalogue (VMP/AMPP, including real pack GTINs).
+- **Demo data.** Real use needs the full NHS **dm+d** medicines catalogue (VMP/AMPP,
+  including real pack GTINs). Real pharmacies join themselves with their ODS code.
 - **GPhC checks are manual**: the register has no public API.
 - **Rate limiting** on the public finder is per server instance; a shared store
   (e.g. Redis) would make it exact.

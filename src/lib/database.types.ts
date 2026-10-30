@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      clinician_applications: {
+        Row: {
+          created_at: string
+          full_name: string
+          gphc_number: string
+          id: string
+          ods_code: string | null
+          postcode: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          setting: Database["public"]["Enums"]["clinician_setting"]
+          status: Database["public"]["Enums"]["application_status"]
+          user_id: string
+          workplace: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          gphc_number: string
+          id?: string
+          ods_code?: string | null
+          postcode: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          setting: Database["public"]["Enums"]["clinician_setting"]
+          status?: Database["public"]["Enums"]["application_status"]
+          user_id?: string
+          workplace: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          gphc_number?: string
+          id?: string
+          ods_code?: string | null
+          postcode?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          setting?: Database["public"]["Enums"]["clinician_setting"]
+          status?: Database["public"]["Enums"]["application_status"]
+          user_id?: string
+          workplace?: string
+        }
+        Relationships: []
+      }
       medicine_barcodes: {
         Row: {
           gtin: string
@@ -113,6 +158,7 @@ export type Database = {
           opening_hours: Json
           phone: string | null
           postcode: string
+          share_with_clinicians: boolean
           town: string
         }
         Insert: {
@@ -125,6 +171,7 @@ export type Database = {
           opening_hours?: Json
           phone?: string | null
           postcode: string
+          share_with_clinicians?: boolean
           town: string
         }
         Update: {
@@ -137,6 +184,7 @@ export type Database = {
           opening_hours?: Json
           phone?: string | null
           postcode?: string
+          share_with_clinicians?: boolean
           town?: string
         }
         Relationships: []
@@ -496,6 +544,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_nhs_pharmacy: {
+        Args: {
+          p_address_line: string
+          p_lat: number
+          p_lng: number
+          p_name: string
+          p_ods_code: string
+          p_phone: string
+          p_postcode: string
+          p_town: string
+        }
+        Returns: string
+      }
       admin_add_pharmacy: {
         Args: {
           p_address_line: string
@@ -523,6 +584,7 @@ export type Database = {
           recipients: number
         }[]
       }
+      can_see_stock: { Args: { p_pharmacy_id: string }; Returns: boolean }
       close_broadcast: { Args: { p_broadcast_id: string }; Returns: number }
       close_stock_request: {
         Args: { p_reason: string; p_request_id: string }
@@ -552,6 +614,7 @@ export type Database = {
           urgency: Database["public"]["Enums"]["request_urgency"]
         }[]
       }
+      is_approved_clinician: { Args: never; Returns: boolean }
       is_manager_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       is_staff_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
@@ -647,6 +710,10 @@ export type Database = {
         Args: { r: Database["public"]["Tables"]["stock_requests"]["Row"] }
         Returns: string
       }
+      review_clinician_application: {
+        Args: { p_application_id: string; p_approve: boolean }
+        Returns: Database["public"]["Enums"]["application_status"]
+      }
       review_staff_application: {
         Args: { p_application_id: string; p_approve: boolean }
         Returns: Database["public"]["Enums"]["application_status"]
@@ -680,10 +747,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      set_clinician_sharing: {
+        Args: { p_pharmacy_id: string; p_share: boolean }
+        Returns: undefined
+      }
       stock_verified_window: { Args: never; Returns: string }
     }
     Enums: {
       application_status: "pending" | "approved" | "rejected"
+      clinician_setting: "gp_practice" | "other"
       request_status: "pending" | "confirmed" | "declined"
       request_urgency: "urgent" | "routine"
       stock_level: "in_stock" | "low" | "out_of_stock"
@@ -815,6 +887,7 @@ export const Constants = {
   public: {
     Enums: {
       application_status: ["pending", "approved", "rejected"],
+      clinician_setting: ["gp_practice", "other"],
       request_status: ["pending", "confirmed", "declined"],
       request_urgency: ["urgent", "routine"],
       stock_level: ["in_stock", "low", "out_of_stock"],

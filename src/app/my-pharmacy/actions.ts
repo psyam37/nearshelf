@@ -141,6 +141,42 @@ export async function setPublicListing(
   return { status: "idle" };
 }
 
+const sharingSchema = z.object({
+  pharmacyId: z.uuid(),
+  shared: z.stringbool(),
+});
+
+/** Let approved GP practice and locum pharmacists see this pharmacy's stock, or not. */
+export async function setClinicianSharing(
+  _prev: ListingState,
+  formData: FormData,
+): Promise<ListingState> {
+  if (!(await getCurrentUser())) {
+    return { status: "error", message: "Your session has ended. Sign in again." };
+  }
+  const parsed = sharingSchema.safeParse({
+    pharmacyId: formData.get("pharmacyId"),
+    shared: formData.get("shared"),
+  });
+  if (!parsed.success) return { status: "error", message: "That wasn't valid." };
+
+  // The database function checks that you work at this pharmacy.
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_clinician_sharing", {
+    p_pharmacy_id: parsed.data.pharmacyId,
+    p_share: parsed.data.shared,
+  });
+  if (error) {
+    if (error.code !== "42501") console.error("sharing change failed:", error);
+    return {
+      status: "error",
+      message: error.code === "42501" ? NOT_YOUR_PHARMACY : "Couldn't save. Try again.",
+    };
+  }
+  refresh();
+  return { status: "idle" };
+}
+
 export type ImportState =
   | { status: "idle" }
   | { status: "imported"; updated: number; total: number; unmatched: string[] }
