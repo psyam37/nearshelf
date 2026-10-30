@@ -20,6 +20,7 @@ export type Database = {
           full_name: string
           gphc_number: string
           id: string
+          nhs_email: boolean
           ods_code: string | null
           postcode: string
           reviewed_at: string | null
@@ -34,6 +35,7 @@ export type Database = {
           full_name: string
           gphc_number: string
           id?: string
+          nhs_email?: boolean
           ods_code?: string | null
           postcode: string
           reviewed_at?: string | null
@@ -48,6 +50,7 @@ export type Database = {
           full_name?: string
           gphc_number?: string
           id?: string
+          nhs_email?: boolean
           ods_code?: string | null
           postcode?: string
           reviewed_at?: string | null
@@ -383,6 +386,7 @@ export type Database = {
           full_name: string
           gphc_number: string
           id: string
+          nhs_email: boolean
           pharmacy_id: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -394,6 +398,7 @@ export type Database = {
           full_name: string
           gphc_number: string
           id?: string
+          nhs_email?: boolean
           pharmacy_id: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -405,6 +410,7 @@ export type Database = {
           full_name?: string
           gphc_number?: string
           id?: string
+          nhs_email?: boolean
           pharmacy_id?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -595,6 +601,7 @@ export type Database = {
         Args: { p_from_pharmacy_id: string }
         Returns: number
       }
+      has_nhs_email: { Args: never; Returns: boolean }
       incoming_requests: {
         Args: { p_pharmacy_id: string }
         Returns: {

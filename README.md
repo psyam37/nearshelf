@@ -112,11 +112,11 @@ patients can see who has a hard-to-find medicine nearby.
 
 ### Managers and admins
 
-| Feature                     | What it does                                                                                                                                                                                                     |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Verified sign-up**        | Staff apply with their name, **GPhC registration number** and their branch's **NHS ODS code**. Any active pharmacy in the NHS directory can join: the first time someone applies, it's added from its NHS entry. |
-| **Approvals**               | A NearShelf admin approves a pharmacy's first member, who becomes its **manager**. From then on, its managers check the GPhC register and approve their own staff.                                               |
-| **GP practices and locums** | Pharmacists outside community pharmacy register with their GPhC number (and their GP practice's ODS code) for **view-only** stock search. Admins approve them, and each pharmacy can switch this off.            |
+| Feature                     | What it does                                                                                                                                                                                                                                                           |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Verified sign-up**        | Staff apply with their name, **GPhC registration number** and their branch's **NHS ODS code**. Any active pharmacy in the NHS directory can join: the first time someone applies, it's added from its NHS entry.                                                       |
+| **Approvals**               | A NearShelf admin approves a pharmacy's first member, who becomes its **manager**. From then on, its managers check the GPhC register and approve their own staff.                                                                                                     |
+| **GP practices and locums** | Pharmacists outside community pharmacy register with their GPhC number (and their GP practice's ODS code) for **view-only** stock search. Admins approve them, and each pharmacy can switch this off. Applications made with an NHS email show an **NHS email** badge. |
 
 ## The legal model
 
@@ -337,6 +337,7 @@ raising an "error" whose message is the list of results.
 | `request_lifecycle_and_chat.sql` (17) | Urgent sorted first, chat signed by the right pharmacy, **patient details refused**, closing rules, 2-hour expiry, closing broadcasts              |
 | `public_listings.sql` (11)            | Only listed stock is public, **controlled drugs never**, old or out-of-stock hidden, anonymous view counts stay private                            |
 | `open_signup_and_clinicians.sql` (13) | Clinicians start pending, see no stock until approved, then only from sharing pharmacies; only the server adds pharmacies; first member is manager |
+| `nhs_email_badge.sql` (3)             | Applications made while signed in with an NHSmail or `.nhs.uk` address get an NHS email badge; nobody can set it themselves                        |
 
 App code checks:
 
