@@ -114,6 +114,7 @@ patients can see who has a hard-to-find medicine nearby.
 
 | Feature                     | What it does                                                                                                                                                                                                                                                           |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pilot requests**          | Pharmacies ask to join on `/pilot`. An admin approves, which makes a demo account at the nearest demo pharmacy and a private demo link that signs them straight in. Demo accounts only ever see demo pharmacies.                                                       |
 | **Verified sign-up**        | Staff apply with their name, **GPhC registration number** and their branch's **NHS ODS code**. Any active pharmacy in the NHS directory can join: the first time someone applies, it's added from its NHS entry.                                                       |
 | **Approvals**               | A NearShelf admin approves a pharmacy's first member, who becomes its **manager**. From then on, its managers check the GPhC register and approve their own staff.                                                                                                     |
 | **GP practices and locums** | Pharmacists outside community pharmacy register with their GPhC number (and their GP practice's ODS code) for **view-only** stock search. Admins approve them, and each pharmacy can switch this off. Applications made with an NHS email show an **NHS email** badge. |
@@ -338,6 +339,7 @@ raising an "error" whose message is the list of results.
 | `public_listings.sql` (11)            | Only listed stock is public, **controlled drugs never**, old or out-of-stock hidden, anonymous view counts stay private                            |
 | `open_signup_and_clinicians.sql` (13) | Clinicians start pending, see no stock until approved, then only from sharing pharmacies; only the server adds pharmacies; first member is manager |
 | `nhs_email_badge.sql` (3)             | Applications made while signed in with an NHSmail or `.nhs.uk` address get an NHS email badge; nobody can set it themselves                        |
+| `pilot_requests.sql` (11)             | Pilot requests are admin-only, only the server approves, demo staff never see or ask real pharmacies, real staff never see demo stock              |
 
 App code checks:
 

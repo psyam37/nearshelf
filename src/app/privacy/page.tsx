@@ -87,6 +87,15 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
+        <Section title="Pilot requests">
+          <p>
+            If you ask to join the pilot, we keep the name, role, pharmacy, postcode, email and
+            phone number you give us, and your message, so we can review your request and send you a
+            demo link. We only use them to contact you about the pilot (with your consent), and
+            delete them on request.
+          </p>
+        </Section>
+
         <Section title="Where data is kept, and for how long">
           <p>
             Data is stored with Supabase (database and sign-in) and served by Vercel (hosting). Push

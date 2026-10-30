@@ -10,7 +10,8 @@
 do $$
 declare
   hox uuid := (select id from public.pharmacies where ods_code = 'DEMO01');
-  old uuid := (select id from public.pharmacies where ods_code = 'DEMO02');
+  med uuid := (select id from public.medicines order by name limit 1);
+  hidden_pharmacy uuid;
   user_h uuid := (select id from auth.users where email = 'hoxton@example.com');
   user_o uuid := (select id from auth.users where email = 'oldstreet@example.com');
   new_pharmacy uuid;
@@ -30,11 +31,17 @@ begin
   delete from public.pharmacy_staff where user_id = user_o;
   insert into public.platform_admins (user_id) values (user_h) on conflict do nothing;
   update public.pharmacies set share_with_clinicians = true where id = hox;
-  update public.pharmacies set share_with_clinicians = false where id = old;
+  -- Two real (non-demo) pharmacies with stock: one shares with clinicians, one doesn't.
   insert into public.pharmacies (ods_code, name, address_line, town, postcode, location)
     values ('TEST99', 'Test Pharmacy', '1 Test Street', 'Nottingham', 'NG1 1AA',
             st_setsrid(st_makepoint(-1.15, 52.95), 4326)::geography)
     returning id into new_pharmacy;
+  insert into public.pharmacies (ods_code, name, address_line, town, postcode, location, share_with_clinicians)
+    values ('TEST98', 'Private Test Pharmacy', '2 Test Street', 'Nottingham', 'NG1 1AB',
+            st_setsrid(st_makepoint(-1.15, 52.951), 4326)::geography, false)
+    returning id into hidden_pharmacy;
+  insert into public.stock_status (pharmacy_id, medicine_id, level)
+    values (new_pharmacy, med, 'in_stock'), (hidden_pharmacy, med, 'in_stock');
 
   perform set_config('role', 'authenticated', true);
 
@@ -96,14 +103,15 @@ begin
   ------------------------------------------------------- as Old Street's user
   perform set_config('request.jwt.claims', json_build_object('sub', user_o, 'role', 'authenticated')::text, true);
 
-  -- 8. Approved: sees stock at pharmacies that share, and none at those that don't.
-  select count(*) into n from public.stock_status where pharmacy_id = hox;
+  -- 8. Approved: sees stock at real pharmacies that share, none at those that
+  -- don't, and none at the fictional demo pharmacies.
+  select count(*) into n from public.stock_status where pharmacy_id = new_pharmacy;
   results := results || format(E'\n8. Approved clinician sees a sharing pharmacy''s stock (%s rows): %s', n, case when n > 0 then 'PASS' else 'FAIL' end);
-  select count(*) into n from public.stock_status where pharmacy_id = old;
-  results := results || format(E'\n9. ...and none from a pharmacy that doesn''t share (%s rows): %s', n, case when n = 0 then 'PASS' else 'FAIL' end);
+  select count(*) into n from public.stock_status where pharmacy_id in (hidden_pharmacy, hox);
+  results := results || format(E'\n9. ...and none from one that doesn''t share, or a demo one (%s rows): %s', n, case when n = 0 then 'PASS' else 'FAIL' end);
 
   -- 10. Clinicians still can't change stock.
-  update public.stock_status set level = 'out_of_stock' where pharmacy_id = hox;
+  update public.stock_status set level = 'out_of_stock' where pharmacy_id = new_pharmacy;
   get diagnostics n = row_count;
   results := results || format(E'\n10. Clinician changing stock changed %s rows: %s', n, case when n = 0 then 'PASS' else 'FAIL' end);
 

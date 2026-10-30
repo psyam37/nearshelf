@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ApplicationsList } from "@/components/ApplicationsList";
 import { ClinicianApplicationsList } from "@/components/ClinicianApplicationsList";
+import { PilotRequestsList } from "@/components/PilotRequestsList";
 import { ListSkeleton, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { isPlatformAdmin } from "@/lib/pharmacy";
@@ -42,6 +43,15 @@ async function AdminContent() {
         <AddPharmacyCard />
         <SyncNhsDataCard />
       </div>
+      <h2 className="mt-10 mb-1 text-lg font-semibold">Pilot requests</h2>
+      <p className="mb-3 text-sm text-muted">
+        From the{" "}
+        <a href="/pilot" className="font-medium text-accent underline">
+          Join the pilot
+        </a>{" "}
+        form. Demo accounts only ever see the demo pharmacies.
+      </p>
+      <PilotRequestsList />
       <h2 className="mt-10 mb-1 text-lg font-semibold">Staff applications</h2>
       <p className="mb-3 text-sm text-muted">
         You approve the first member of a pharmacy, who becomes its manager. From then on its

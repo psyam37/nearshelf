@@ -10,12 +10,8 @@ export const metadata: Metadata = {
     "Stop phoning around. NearShelf shows which pharmacies near you have a medicine, and lets you ask them all in one tap. Free pilot for independent pharmacies.",
 };
 
-const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
-const pilotHref = CONTACT
-  ? `mailto:${CONTACT}?subject=${encodeURIComponent("NearShelf pilot")}&body=${encodeURIComponent(
-      "Hi, I'd like to hear about the NearShelf pilot.\n\nPharmacy name:\nODS code:\nBest time to talk:",
-    )}`
-  : "/join";
+// The pilot form: approved pharmacies get a private demo link.
+const PILOT_HREF = "/pilot";
 
 /** A screenshot that switches with the visitor's light/dark theme. */
 function Screen({
@@ -133,13 +129,13 @@ export default function PharmaciesPage() {
               it, and asks them all at once. Your patient leaves knowing exactly where to go.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href={pilotHref}
+              <Link
+                href={PILOT_HREF}
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-brand-900 shadow-lg transition-colors hover:bg-brand-50"
               >
                 Join the free pilot
                 <Icon name="arrow" className="h-4 w-4" />
-              </a>
+              </Link>
               <a
                 href="#how-it-works"
                 className="inline-flex items-center gap-2 rounded-xl px-5 py-3 font-semibold text-white ring-1 ring-white/30 transition-colors hover:bg-white/10"
@@ -348,17 +344,17 @@ export default function PharmaciesPage() {
             Be one of the first pharmacies on NearShelf
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-brand-100/85">
-            Free during the pilot. Setup takes ten minutes: we add your pharmacy from its ODS code,
-            your team joins with their GPhC numbers, and you&apos;re live.
+            Free during the pilot. Ask to join and we&apos;ll send you a private demo to try first.
+            When you&apos;re ready, your team joins with their GPhC numbers and you&apos;re live.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a
-              href={pilotHref}
+            <Link
+              href={PILOT_HREF}
               className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-brand-900 hover:bg-brand-50"
             >
               Join the free pilot
               <Icon name="arrow" className="h-4 w-4" />
-            </a>
+            </Link>
             <Link
               href="/find"
               className={`${button.secondary} border-white/30 bg-transparent px-6 py-3 text-white hover:bg-white/10`}

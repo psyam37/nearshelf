@@ -2,13 +2,16 @@
 // NearShelf admin tools. Every action checks the admin flag here, and the
 // database functions check it again.
 
+import { randomBytes } from "node:crypto";
 import { refresh } from "next/cache";
 import { z } from "zod";
+import type { ReviewState } from "@/app/join/actions";
 import { getCurrentUser } from "@/lib/auth";
 import { lookupPostcode } from "@/lib/geo";
 import { fetchPcaMonth, formatMonth, listPcaMonths, type PcaMonth } from "@/lib/nhs-data";
 import { lookupNhsOds, ODS_CODE_PATTERN, tidyCase } from "@/lib/ods";
 import { isPlatformAdmin } from "@/lib/pharmacy";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminState =
@@ -236,4 +239,98 @@ export async function syncNhsData(_prev: AdminState): Promise<AdminState> {
       `NHS data up to date (${range}): ${todo.length - failed.length} months loaded, ${rowsSaved} rows.` +
       (failed.length > 0 ? ` ${failed.length} months failed; press again to retry them.` : ""),
   };
+}
+
+const pilotReviewSchema = z.object({
+  applicationId: z.uuid(),
+  decision: z.enum(["approve", "reject"]),
+});
+
+/**
+ * Approve or reject a pilot request. Approving makes a demo account, as
+ * staff at the demo pharmacy nearest their postcode, and a private link that
+ * signs them into it. The account has a made-up email, so their real address
+ * stays free for when they join for real.
+ */
+export async function reviewPilotRequest(
+  _prev: ReviewState,
+  formData: FormData,
+): Promise<ReviewState> {
+  const denied = await requireAdmin();
+  if (denied) return { status: "error", message: denied };
+  const reviewer = await getCurrentUser();
+  const parsed = pilotReviewSchema.safeParse({
+    applicationId: formData.get("applicationId"),
+    decision: formData.get("decision"),
+  });
+  if (!parsed.success || !reviewer) return { status: "error", message: "That wasn't valid." };
+  const { applicationId: requestId, decision } = parsed.data;
+
+  if (decision === "reject") {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("reject_pilot_request", { p_request_id: requestId });
+    if (error) return { status: "error", message: "Couldn't save. Try again." };
+    refresh();
+    return { status: "reviewed", decision: "rejected" };
+  }
+
+  const admin = createAdminClient();
+  if (!admin) return { status: "error", message: "SUPABASE_SECRET_KEY isn't set on the server." };
+  const { data: request, error: findError } = await admin
+    .from("pilot_requests")
+    .select("contact_name, postcode, status")
+    .eq("id", requestId)
+    .single();
+  if (findError || request.status !== "pending") {
+    return { status: "error", message: "Someone already reviewed this." };
+  }
+
+  // The nearest demo pharmacy to them; Nottingham centre if the postcode
+  // can't be found.
+  let point = { lat: 52.954, lng: -1.15 };
+  try {
+    point = await lookupPostcode(request.postcode);
+  } catch {
+    // Keep the fallback.
+  }
+  const { data: demoPharmacyId, error: nearestError } = await admin.rpc("nearest_demo_pharmacy", {
+    p_lat: point.lat,
+    p_lng: point.lng,
+  });
+  if (nearestError || !demoPharmacyId) {
+    return { status: "error", message: "There are no demo pharmacies. Load the demo data first." };
+  }
+
+  const { data: created, error: userError } = await admin.auth.admin.createUser({
+    email: `pilot-${randomBytes(6).toString("hex")}@example.com`,
+    email_confirm: true,
+    user_metadata: { pilot_request_id: requestId, name: request.contact_name },
+  });
+  if (userError) {
+    console.error("demo account failed:", userError);
+    return { status: "error", message: "Couldn't create the demo account. Try again." };
+  }
+
+  const { error } = await admin.rpc("approve_pilot_request", {
+    p_request_id: requestId,
+    p_reviewer: reviewer.id,
+    p_demo_user_id: created.user.id,
+    p_demo_pharmacy_id: demoPharmacyId,
+    // 24 random bytes: 32 characters, unguessable.
+    p_demo_token: randomBytes(24).toString("base64url"),
+  });
+  if (error) {
+    // Don't leave an account behind that nothing links to.
+    await admin.auth.admin.deleteUser(created.user.id);
+    console.error("approving pilot request failed:", error);
+    return {
+      status: "error",
+      message: error.message.includes("already reviewed")
+        ? "Someone already reviewed this."
+        : "Couldn't approve it. Try again.",
+    };
+  }
+
+  refresh();
+  return { status: "reviewed", decision: "approved" };
 }

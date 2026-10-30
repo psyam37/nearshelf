@@ -108,3 +108,42 @@ export const publicFindSchema = z.object({
     .default(5),
 });
 export type PublicFindInput = z.infer<typeof publicFindSchema>;
+
+// Asking to join the pilot, from the public /pilot page. `website` is a
+// honeypot: hidden from people, so only bots fill it in.
+export const PILOT_ROLES = [
+  "Pharmacist",
+  "Owner or superintendent",
+  "Pharmacy manager",
+  "Pharmacy technician",
+  "Dispenser",
+  "Other",
+] as const;
+
+export const pilotRequestSchema = z.object({
+  contactName: fullName,
+  role: z.enum(PILOT_ROLES, "Choose your role"),
+  pharmacyName: z.string().trim().min(2, "Enter your pharmacy's name").max(120),
+  odsCode: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    odsCode("FA123").optional(),
+  ),
+  postcode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/, "Enter the pharmacy's postcode, e.g. NG1 5FS"),
+  email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address")),
+  phone: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    z
+      .string()
+      .trim()
+      .regex(/^[0-9 +()]{6,20}$/, "Phone numbers can only use digits, spaces, + and brackets")
+      .optional(),
+  ),
+  message: z.string().trim().max(1000, "Keep it under 1,000 characters").optional(),
+  consent: z.literal("on", "Tick the box so we can contact you"),
+  website: z.string().max(0).optional(),
+});
+export type PilotRequestInput = z.infer<typeof pilotRequestSchema>;

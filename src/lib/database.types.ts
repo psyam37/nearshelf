@@ -221,6 +221,60 @@ export type Database = {
           },
         ]
       }
+      pilot_requests: {
+        Row: {
+          contact_name: string
+          created_at: string
+          demo_token: string | null
+          demo_user_id: string | null
+          email: string
+          id: string
+          message: string | null
+          ods_code: string | null
+          pharmacy_name: string
+          phone: string | null
+          postcode: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role: string
+          status: Database["public"]["Enums"]["application_status"]
+        }
+        Insert: {
+          contact_name: string
+          created_at?: string
+          demo_token?: string | null
+          demo_user_id?: string | null
+          email: string
+          id?: string
+          message?: string | null
+          ods_code?: string | null
+          pharmacy_name: string
+          phone?: string | null
+          postcode: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role: string
+          status?: Database["public"]["Enums"]["application_status"]
+        }
+        Update: {
+          contact_name?: string
+          created_at?: string
+          demo_token?: string | null
+          demo_user_id?: string | null
+          email?: string
+          id?: string
+          message?: string | null
+          ods_code?: string | null
+          pharmacy_name?: string
+          phone?: string | null
+          postcode?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: string
+          status?: Database["public"]["Enums"]["application_status"]
+        }
+        Relationships: []
+      }
       platform_admins: {
         Row: {
           created_at: string
@@ -576,6 +630,16 @@ export type Database = {
         }
         Returns: string
       }
+      approve_pilot_request: {
+        Args: {
+          p_demo_pharmacy_id: string
+          p_demo_token: string
+          p_demo_user_id: string
+          p_request_id: string
+          p_reviewer: string
+        }
+        Returns: undefined
+      }
       broadcast_stock_request: {
         Args: {
           p_from_pharmacy_id: string
@@ -622,6 +686,7 @@ export type Database = {
         }[]
       }
       is_approved_clinician: { Args: never; Returns: boolean }
+      is_demo_pharmacy: { Args: { p_pharmacy_id: string }; Returns: boolean }
       is_manager_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       is_staff_of: { Args: { p_pharmacy_id: string }; Returns: boolean }
@@ -649,6 +714,10 @@ export type Database = {
           updated_at: string
           verified: boolean
         }[]
+      }
+      nearest_demo_pharmacy: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: string
       }
       nhs_dispensing_months: { Args: never; Returns: string[] }
       nhs_dispensing_series: { Args: { p_icb_name: string }; Returns: Json }
@@ -712,6 +781,10 @@ export type Database = {
       }
       reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
       refresh_demo_data: { Args: never; Returns: Json }
+      reject_pilot_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
       request_open_window: { Args: never; Returns: string }
       request_state: {
         Args: { r: Database["public"]["Tables"]["stock_requests"]["Row"] }
