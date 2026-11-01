@@ -104,10 +104,7 @@ export function PublicFinder() {
         </EmptyState>
       ) : (
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
-            {current.results.length}{" "}
-            {current.results.length === 1 ? "pharmacy reports" : "pharmacies report"} having it
-          </h2>
+          <ResultsHeading results={current.results} />
           {location && medicine && (
             <StockMap
               origin={location}
@@ -123,6 +120,26 @@ export function PublicFinder() {
   );
 }
 
+/** Counts real pharmacies only, and warns when pretend ones are on the list. */
+function ResultsHeading({ results }: { results: PublicStockResult[] }) {
+  const real = results.filter((r) => !r.is_demo).length;
+  return (
+    <>
+      <h2 className="text-xl font-semibold tracking-tight">
+        {real === 0
+          ? "No real pharmacy has listed this nearby yet"
+          : `${real} ${real === 1 ? "pharmacy reports" : "pharmacies report"} having it`}
+      </h2>
+      {real < results.length && (
+        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          Pharmacies marked <strong>Demo</strong> are pretend. They show how NearShelf works, and
+          they don&apos;t exist, so please don&apos;t try to call or visit them.
+        </p>
+      )}
+    </>
+  );
+}
+
 function ResultsList({ results }: { results: PublicStockResult[] }) {
   const now = new Date();
   return (
@@ -131,7 +148,14 @@ function ResultsList({ results }: { results: PublicStockResult[] }) {
         <li key={r.pharmacy_id} className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-semibold">{r.pharmacy_name}</p>
+              <p className="font-semibold">
+                {r.pharmacy_name}
+                {r.is_demo && (
+                  <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 align-middle text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                    Demo
+                  </span>
+                )}
+              </p>
               <p className="mt-0.5 text-sm text-muted">
                 {r.address_line}, {r.town} {r.postcode} · {formatMiles(r.distance_m)}
               </p>
@@ -141,23 +165,26 @@ function ResultsList({ results }: { results: PublicStockResult[] }) {
             </div>
             <StockBadge level={r.level} />
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {r.phone && (
-              <a href={`tel:${r.phone.replace(/\s/g, "")}`} className={button.primary}>
-                <Icon name="phone" className="h-4 w-4" />
-                Call {r.phone}
+          {/* A pretend pharmacy gets no way to phone or travel to it. */}
+          {!r.is_demo && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {r.phone && (
+                <a href={`tel:${r.phone.replace(/\s/g, "")}`} className={button.primary}>
+                  <Icon name="phone" className="h-4 w-4" />
+                  Call {r.phone}
+                </a>
+              )}
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}`}
+                target="_blank"
+                rel="noreferrer"
+                className={button.secondary}
+              >
+                <Icon name="pin" className="h-4 w-4" />
+                Directions
               </a>
-            )}
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}`}
-              target="_blank"
-              rel="noreferrer"
-              className={button.secondary}
-            >
-              <Icon name="pin" className="h-4 w-4" />
-              Directions
-            </a>
-          </div>
+            </div>
+          )}
         </li>
       ))}
     </ul>
@@ -168,7 +195,7 @@ function ResultsList({ results }: { results: PublicStockResult[] }) {
 function toMapRow(r: PublicStockResult, medicine: Medicine): NearbyStockResult {
   return {
     pharmacy_id: r.pharmacy_id,
-    pharmacy_name: r.pharmacy_name,
+    pharmacy_name: r.is_demo ? `${r.pharmacy_name} (demo)` : r.pharmacy_name,
     address_line: r.address_line,
     town: r.town,
     postcode: r.postcode,

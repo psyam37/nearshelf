@@ -331,15 +331,16 @@ raising an "error" whose message is the list of results.
 2. Paste a test file into the **SQL Editor** and run it.
 3. Read the message: every line should end in **PASS**.
 
-| File                                  | Checks                                                                                                                                             |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `verified_reserve_broadcast.sql` (11) | 2-hour verification and ranking, Still in stock, broadcasts reach the right pharmacies, no duplicates, the 30-minute hold, answers can't change    |
-| `staff_applications.sql` (14)         | Applications start pending, one per person, GPhC numbers used once, privacy, only managers/admins review, never your own                           |
-| `request_lifecycle_and_chat.sql` (17) | Urgent sorted first, chat signed by the right pharmacy, **patient details refused**, closing rules, 2-hour expiry, closing broadcasts              |
-| `public_listings.sql` (11)            | Only listed stock is public, **controlled drugs never**, old or out-of-stock hidden, anonymous view counts stay private                            |
-| `open_signup_and_clinicians.sql` (13) | Clinicians start pending, see no stock until approved, then only from sharing pharmacies; only the server adds pharmacies; first member is manager |
-| `nhs_email_badge.sql` (3)             | Applications made while signed in with an NHSmail or `.nhs.uk` address get an NHS email badge; nobody can set it themselves                        |
-| `pilot_requests.sql` (11)             | Pilot requests are admin-only, only the server approves, demo staff never see or ask real pharmacies, real staff never see demo stock              |
+| File                                  | Checks                                                                                                                                                     |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `verified_reserve_broadcast.sql` (11) | 2-hour verification and ranking, Still in stock, broadcasts reach the right pharmacies, no duplicates, the 30-minute hold, answers can't change            |
+| `staff_applications.sql` (14)         | Applications start pending, one per person, GPhC numbers used once, privacy, only managers/admins review, never your own                                   |
+| `request_lifecycle_and_chat.sql` (17) | Urgent sorted first, chat signed by the right pharmacy, **patient details refused**, closing rules, 2-hour expiry, closing broadcasts                      |
+| `public_listings.sql` (11)            | Only listed stock is public, **controlled drugs never**, old or out-of-stock hidden, anonymous view counts stay private                                    |
+| `open_signup_and_clinicians.sql` (13) | Clinicians start pending, see no stock until approved, then only from sharing pharmacies; only the server adds pharmacies; first member is manager         |
+| `nhs_email_badge.sql` (3)             | Applications made while signed in with an NHSmail or `.nhs.uk` address get an NHS email badge; nobody can set it themselves                                |
+| `pilot_requests.sql` (11)             | Pilot requests are admin-only, only the server approves, demo staff never see or ask real pharmacies, real staff never see demo stock                      |
+| `demo_freshness.sql` (6)              | Demo links refresh only old demo stock, never real stock, and only the server can do it; the public finder marks demo pharmacies and lists real ones first |
 
 App code checks:
 

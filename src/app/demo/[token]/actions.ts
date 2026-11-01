@@ -59,5 +59,10 @@ export async function enterDemo(_prev: DemoState, formData: FormData): Promise<D
     return { status: "error", message: "Couldn't open the demo. Try again." };
   }
 
+  // Demo stock goes "Unverified" after 2 hours, so freshen it for this visit.
+  // A stale demo is better than no demo, so a failure here doesn't stop them.
+  const { error: refreshError } = await admin.rpc("refresh_demo_stock_times");
+  if (refreshError) console.error("refreshing demo stock failed:", refreshError);
+
   redirect("/search");
 }

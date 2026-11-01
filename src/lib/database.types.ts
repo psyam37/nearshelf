@@ -752,6 +752,7 @@ export type Database = {
           address_line: string
           confirmed_at: string
           distance_m: number
+          is_demo: boolean
           lat: number
           level: Database["public"]["Enums"]["stock_level"]
           lng: number
@@ -781,6 +782,7 @@ export type Database = {
       }
       reconfirm_stock: { Args: { p_pharmacy_id: string }; Returns: number }
       refresh_demo_data: { Args: never; Returns: Json }
+      refresh_demo_stock_times: { Args: never; Returns: number }
       reject_pilot_request: {
         Args: { p_request_id: string }
         Returns: undefined
